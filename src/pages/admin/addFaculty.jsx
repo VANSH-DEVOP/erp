@@ -1,0 +1,33 @@
+import React, { useState } from "react";
+
+const AddFaculty = () => {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    department: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Faculty Data:", form);
+    alert("Faculty added!");
+  };
+
+  return (
+    <div>
+      <h2>Add Faculty</h2>
+      <form onSubmit={handleSubmit}>
+        <input name="name" placeholder="Name" onChange={handleChange} />
+        <input name="email" placeholder="Email" onChange={handleChange} />
+        <input name="department" placeholder="Department" onChange={handleChange} />
+        <button type="submit">Add Faculty</button>
+      </form>
+    </div>
+  );
+};
+
+export default AddFaculty;

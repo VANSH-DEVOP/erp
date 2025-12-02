@@ -6,8 +6,11 @@ const connectDB = require("./config/dbConnect");
 dotenv.config();
 
 const app = express();
+
+// Connect to MongoDB
 connectDB();
 
+// Middlewares
 app.use(express.json());
 app.use(
   cors({
@@ -16,15 +19,27 @@ app.use(
   })
 );
 
-// Default root API
+// ===================== IMPORT ROUTES =====================
+const loginRoutes = require("./routes/LoginRoutes");
+const adminRoutes = require("./routes/AdminRoutes");
+const facultyRoutes = require("./routes/FacultyRoutes");
+const studentRoutes = require("./routes/StudentRoutes");
+
+// ===================== USE ROUTES ========================
+app.use("/api/auth", loginRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/faculty", facultyRoutes);
+app.use("/api/student", studentRoutes);
+
+// ===================== DEFAULT ROUTE =====================
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Server is running successfully ",
+    message: "Server is running successfully",
   });
 });
 
-// Start server
+// ===================== START SERVER ======================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

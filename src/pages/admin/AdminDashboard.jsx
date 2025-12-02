@@ -1,55 +1,74 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { FiUsers, FiBook, FiLayers, FiPlusCircle } from "react-icons/fi";
+import DepartmentPie from "../../components/DepartmentPie";
+
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const options = [
-    { title: "Add Student", path: "/admin/add-student" },
-    { title: "Add Faculty", path: "/admin/add-faculty" },
-    { title: "All Courses", path: "/admin/all-courses" },
-    { title: "Create Course Offering", path: "/admin/create-course-offering" },
-    { title: "View All Students", path: "/admin/view-all-students" },
-    { title: "View All Faculty", path: "/admin/view-all-faculty" },
-    { title: "View Current Course Offerings", path: "/admin/view-current-offerings" },
+    { title: "Add Student", icon: <FiUsers size={30} />, path: "/admin/add-student" },
+    { title: "Add Faculty", icon: <FiUsers size={30} />, path: "/admin/add-faculty" },
+    { title: "All Courses", icon: <FiBook size={30} />, path: "/admin/all-courses" },
+    { title: "Create Course Offering", icon: <FiPlusCircle size={30} />, path: "/admin/create-course-offering" },
+    { title: "View All Students", icon: <FiUsers size={30} />, path: "/admin/view-all-students" },
+    { title: "View All Faculty", icon: <FiUsers size={30} />, path: "/admin/view-all-faculty" },
+    { title: "Current Offerings", icon: <FiLayers size={30} />, path: "/admin/view-current-offerings" },
   ];
 
   return (
-    <div className="flex h-screen w-full bg-white p-6">
+    <div className="min-h-screen bg-[#f8fafc] p-10">
 
-      {/* LEFT PANEL */}
-      <div className="w-1/4 border-r border-gray-300 pr-6 flex flex-col space-y-4">
-        
-        {/* Green Icon */}
-        <div 
-          className="h-14 w-14 rounded-xl"
-          style={{ backgroundColor: "#59ce8f" }}
-        ></div>
-
-        <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-        <p className="text-gray-600">Welcome Admin 👋</p>
+      {/* HEADER */}
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-extrabold text-slate-600">Admin Dashboard</h1>
       </div>
 
-      {/* RIGHT PANEL */}
-      <div className="w-3/4 pl-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {options.map((item, index) => (
-          <div 
-            key={index}
-            className="p-5 rounded-xl shadow-sm cursor-pointer transition transform hover:-translate-y-1 hover:shadow-md"
-            style={{ backgroundColor: "#e8f9fd" }}
-            onClick={() => navigate(item.path)}
-          >
-            <h3 className="text-lg font-semibold mb-3">{item.title}</h3>
+      {/* FUNCTIONALITY TILES */}
+      <div className="grid max-w-5xl mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
 
-            <button
-              className="px-4 py-2 rounded-lg text-white font-semibold"
-              style={{ backgroundColor: "#ff1e00" }}
-            >
-              Open
-            </button>
+        {options.map((item, i) => (
+          <div
+            key={i}
+            onClick={() => navigate(item.path)}
+            className="
+              bg-white rounded-[28px] p-4
+              border border-pink-100
+              shadow-md hover:shadow-xl
+              hover:-translate-y-[3px]
+              transition-all cursor-pointer flex items-center gap-4
+            "
+          >
+            {/* ICON */}
+            <div className="
+              h-14 w-14 rounded-2xl bg-pink-100 text-pink-500 
+              flex items-center justify-center shadow
+            ">
+              {React.cloneElement(item.icon, { size: 24 })}
+            </div>
+
+            {/* TEXT */}
+            <div className="flex flex-col">
+              <h2 className="text-[17px] font-semibold text-slate-700 leading-tight">
+                {item.title}
+              </h2>
+
+              <p className="text-slate-500 text-sm mt-[2px]">
+                Tap to open →
+              </p>
+            </div>
           </div>
         ))}
+
       </div>
+
+
+{/* DEPARTMENT CHART */}
+<div className="max-w-5xl mx-auto mt-10 bg-white rounded-3xl shadow-lg p-8 border border-blue-100">
+  <DepartmentPie />
+</div>
+
 
     </div>
   );

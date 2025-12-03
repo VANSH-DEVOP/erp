@@ -189,10 +189,12 @@ const getAllFaculties = async (req, res) => {
 //  /api/admin/add-course
 const addCourse = async (req, res) => {
   try {
-    const { courseCode, courseName } = req.body;
+    const { courseCode, courseName, department, semester } = req.body;
 
-    if (!courseCode || !courseName) {
-      return res.status(400).json({ message: "courseCode and courseName required" });
+    if (!courseCode || !courseName || !department || !semester) {
+      return res.status(400).json({
+        message: "courseCode, courseName, department and semester are required",
+      });
     }
 
     const existing = await Course.findOne({
@@ -205,6 +207,8 @@ const addCourse = async (req, res) => {
     const course = await Course.create({
       courseCode: courseCode.toUpperCase(),
       courseName,
+      department,
+      semester,
     });
 
     res.status(201).json({ message: "Course created", course });
@@ -213,6 +217,7 @@ const addCourse = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ========================= VIEW ALL COURSES =========================
 // /api/admin/courses

@@ -37,7 +37,7 @@ function App() {
       <Routes>
 
         {/* LOGIN PAGE */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
 
         {/* HOME PAGE */}
         <Route

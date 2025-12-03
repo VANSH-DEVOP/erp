@@ -1,120 +1,183 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
-export default function Otp() {
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
+const Otp = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Data coming from Login OR Forgot Password
-  const { userId, role, email, purpose } = location.state || {};
-
-  // 🚫 BLOCK DIRECT ACCESS
-  useEffect(() => {
-    if (!purpose && (!userId || !role)) {
-      navigate("/login");
-    }
-  }, []);
-
   const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [pendingUser, setPendingUser] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // -------------------- HANDLE OTP VERIFY --------------------
+  // Load pending user data (role + userId)
+  useEffect(() => {
+    // Try from navigation state first (optional)
+    const fromState = location.state?.pendingUser;
+
+    if (fromState) {
+      setPendingUser(fromState);
+      localStorage.setItem("pendingUser", JSON.stringify(fromState));
+    } else {
+      const stored = localStorage.getItem("pendingUser");
+      if (stored) {
+        setPendingUser(JSON.parse(stored));
+      }
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (!pendingUser) return;
+    // Optional: auto-focus input, etc.
+  }, [pendingUser]);
+
   const handleVerify = async () => {
+    setErrorMsg("");
+
+    if (!pendingUser || !pendingUser.userId || !pendingUser.role) {
+      setErrorMsg("No pending login session found. Please login again.");
+      toast.error("Session expired. Please login again.");
+      navigate("/");
+      return;
+    }
+
+    if (!otp) {
+      setErrorMsg("Please enter the OTP.");
+      return;
+    }
+
     try {
       setLoading(true);
-      setErrorMsg("");
 
-      if (!otp) {
-        setErrorMsg("Please enter the OTP");
-        setLoading(false);
-        return;
+      let endpoint = "";
+      if (pendingUser.role === "Student") {
+        endpoint = "/auth/student/verify-otp";
+      } else if (pendingUser.role === "Faculty") {
+        endpoint = "/auth/faculty/verify-otp";
+      } else {
+        throw new Error("Invalid role in pending session.");
       }
 
-      // ----------------------------------------------------------
-      //  CASE 1: FORGOT PASSWORD OTP VERIFICATION
-      // ----------------------------------------------------------
-      if (purpose === "reset-password") {
-        const res = await axios.post("/api/auth/verify-reset-otp", {
-          email,
-          otp,
-        });
+      const res = await axios.post(`${API_BASE_URL}${endpoint}`, {
+        userId: pendingUser.userId,
+        otp,
+      });
 
-        navigate("/reset-password", {
-          state: { email },
-        });
-        return;
+      const { token, user } = res.data;
+
+      if (!token || !user) {
+        throw new Error("Invalid server response.");
       }
 
-      // ----------------------------------------------------------
-      //  CASE 2: NORMAL LOGIN OTP VERIFICATION
-      // ----------------------------------------------------------
-      const api =
-        role === "Student"
-          ? "/api/auth/verify-student-otp"
-          : "/api/auth/verify-faculty-otp";
+      // Save final auth data
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.removeItem("pendingUser");
 
-      const res = await axios.post(api, { userId, otp });
+      toast.success("Login successful");
 
-      // Save token
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      // Redirect based on role
-      if (role === "Admin") navigate("/admin/dashboard");
-      else if (role === "Faculty") navigate("/faculty/profile");
-      else navigate("/student/profile");
-
+      if (user.role === "Student") {
+        navigate("/student/profile");
+      } else if (user.role === "Faculty") {
+        navigate("/faculty/profile");
+      } else if (user.role === "Admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Invalid OTP or server error");
+      console.error("OTP verify error:", err);
+      const msg =
+        err.response?.data?.message || "OTP verification failed. Please try again.";
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // -------------------- UI SECTION --------------------
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-6">
-      <div className="bg-white rounded-3xl p-10 shadow-xl border border-pink-100 max-w-md w-full text-center">
-        
-        <h1 className="text-3xl font-bold text-slate-700 mb-2">
-          OTP Verification
-        </h1>
+  if (!pendingUser) {
+    return (
+      <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 max-w-md w-full">
+          <h2 className="text-xl font-bold text-slate-800 mb-2 text-center">
+            Session Expired
+          </h2>
+          <p className="text-sm text-slate-500 mb-4 text-center">
+            We couldn't find your login session. Please login again.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow hover:opacity-95 transition"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-        <p className="text-slate-500 mb-6">
-          Enter the 6-digit OTP sent to your registered email.
+  return (
+    <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center px-4 py-8">
+      <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl border border-slate-100 p-8 max-w-md w-full">
+        <div className="flex flex-col items-center mb-4">
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-500 border border-indigo-100">
+            OTP Verification
+          </span>
+        </div>
+
+        <h2 className="text-2xl font-extrabold text-center text-slate-800 mb-2">
+          Enter OTP
+        </h2>
+        <p className="text-center text-sm text-slate-500 mb-6">
+          We have sent a 6-digit OTP to your registered email for{" "}
+          <span className="font-semibold text-pink-500">
+            {pendingUser.role === "Student" ? "Student" : "Faculty"} account
+          </span>
+          .
         </p>
 
-        <input
-          type="text"
-          maxLength={6}
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          className="
-            w-full px-5 py-3 rounded-xl border border-pink-200 
-            focus:ring-2 focus:ring-pink-300 outline-none text-center 
-            text-xl tracking-widest font-semibold text-gray-700
-          "
-          placeholder="••••••"
-        />
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-slate-500 mb-1">
+            OTP
+          </label>
+          <input
+            type="text"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.trim())}
+            placeholder="Enter 6-digit OTP"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-400 outline-none text-center tracking-[0.5em] text-lg font-semibold"
+          />
+        </div>
 
         {errorMsg && (
-          <p className="text-red-500 mt-3 text-sm">{errorMsg}</p>
+          <p className="text-red-500 text-sm mb-3 text-center">{errorMsg}</p>
         )}
 
         <button
           onClick={handleVerify}
           disabled={loading}
-          className="
-            mt-6 w-full py-3 rounded-xl text-white font-semibold 
-            bg-pink-400 hover:bg-pink-500 transition-all
-            disabled:opacity-50
-          "
+          className={`w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all
+            ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
         >
           {loading ? "Verifying..." : "Verify OTP"}
+        </button>
+
+        <button
+          onClick={() => navigate("/")}
+          className="w-full mt-3 border border-slate-200 text-slate-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
+        >
+          Back to Login
         </button>
       </div>
     </div>
   );
-}
+};
+
+export default Otp;

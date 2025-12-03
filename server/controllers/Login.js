@@ -26,7 +26,7 @@ const studentLogin = async (req, res) => {
 
     /* ---------------- ADMIN LOGIN BLOCK ---------------- */
     if (
-      rollNo === process.env.ADMIN_EMAIL &&
+      rollNo === process.env.ADMIN_ID &&
       password === process.env.ADMIN_PASSWORD
     ) {
       let admin = await User.findOne({ role: "Admin" });
@@ -36,7 +36,7 @@ const studentLogin = async (req, res) => {
         const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
         admin = await User.create({
           name: "Admin",
-          email: process.env.ADMIN_EMAIL,
+          email: 'anant.7878920052@gmail.com',
           passwordHash,
           role: "Admin",
           department: "ADMIN",
@@ -128,7 +128,7 @@ const facultyLogin = async (req, res) => {
 
     /* ---------------- ADMIN LOGIN BLOCK ---------------- */
     if (
-      facultyId === process.env.ADMIN_EMAIL &&
+      facultyId === process.env.ADMIN_ID &&
       password === process.env.ADMIN_PASSWORD
     ) {
       let admin = await User.findOne({ role: "Admin" });
@@ -137,7 +137,7 @@ const facultyLogin = async (req, res) => {
         const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
         admin = await User.create({
           name: "Super Admin",
-          email: process.env.ADMIN_EMAIL,
+          email: 'anant.7878920052@gmail.com',
           passwordHash,
           role: "Admin",
           department: "ADMIN",

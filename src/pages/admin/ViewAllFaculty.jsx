@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import axios from "axios";
 import {
   FiUser,
   FiMail,
@@ -9,34 +10,14 @@ import {
   FiFilter,
 } from "react-icons/fi";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 export default function ViewAllFaculty() {
-  // ================= TEMP STATIC DATA (Replace with backend later) =================
-  const [faculties] = useState([
-    {
-      id: 1,
-      facultyId: "CSE01",
-      name: "Dr. Meera Singh",
-      email: "meera.singh@university.edu",
-      department: "CSE",
-      designation: "Assistant Professor",
-    },
-    {
-      id: 2,
-      facultyId: "ECE09",
-      name: "Prof. Rajat Mehra",
-      email: "rajat.mehra@university.edu",
-      department: "ECE",
-      designation: "Associate Professor",
-    },
-    {
-      id: 3,
-      facultyId: "IT04",
-      name: "Dr. Riya Kapoor",
-      email: "riya.kapoor@university.edu",
-      department: "IT",
-      designation: "Professor",
-    },
-  ]);
+  // ================= BACKEND DATA =================
+  const [faculties, setFaculties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const departments = ["CSE", "ECE", "IT", "MECH", "CIVIL"];
   const designations = [
@@ -53,13 +34,47 @@ export default function ViewAllFaculty() {
 
   const [selectedFaculty, setSelectedFaculty] = useState(null);
 
+  // ================= FETCH FACULTIES =================
+  useEffect(() => {
+    const fetchFaculties = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token = localStorage.getItem("token"); // adjust if you store token differently
+
+        const res = await axios.get(`${API_BASE_URL}/admin/faculties`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        });
+
+        setFaculties(res.data || []);
+      } catch (err) {
+        console.error("Error fetching faculties:", err);
+        setError(
+          err.response?.data?.message || "Failed to load faculties. Try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFaculties();
+  }, []);
+
   // ================= FILTERED DATA LOGIC =================
   const filteredFaculties = useMemo(() => {
     return faculties.filter((f) => {
+      const name = (f.name || "").toLowerCase();
+      const facultyId = (f.facultyId || f.facultyID || "").toLowerCase();
+      const email = (f.email || "").toLowerCase();
+      const searchLower = search.toLowerCase();
+
       const matchSearch =
-        f.name.toLowerCase().includes(search.toLowerCase()) ||
-        f.facultyId.toLowerCase().includes(search.toLowerCase()) ||
-        f.email.toLowerCase().includes(search.toLowerCase());
+        name.includes(searchLower) ||
+        facultyId.includes(searchLower) ||
+        email.includes(searchLower);
 
       const matchDept = selectedDept ? f.department === selectedDept : true;
       const matchDesig = selectedDesig ? f.designation === selectedDesig : true;
@@ -70,7 +85,6 @@ export default function ViewAllFaculty() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
-
       {/* Page Title */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-700 text-center mb-8">
         View All Faculty
@@ -78,13 +92,11 @@ export default function ViewAllFaculty() {
 
       {/* Filters Card */}
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-md border border-purple-100 p-6 mb-8">
-
         <div className="flex items-center gap-3 text-purple-600 font-semibold mb-4">
           <FiFilter /> Filters
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
           {/* Search */}
           <div className="relative">
             <FiSearch className="absolute top-3 left-3 text-slate-400" size={18} />
@@ -129,33 +141,65 @@ export default function ViewAllFaculty() {
 
       {/* Faculty Table */}
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg border border-purple-100 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-slate-700">Faculty Records</h2>
+          {loading && (
+            <span className="text-sm text-purple-500 animate-pulse">
+              Loading faculties...
+            </span>
+          )}
+        </div>
 
-        <h2 className="text-2xl font-bold text-slate-700 mb-6">Faculty Records</h2>
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-left border-collapse">
             <thead>
               <tr className="bg-purple-50 border-b border-purple-100">
                 <th className="px-4 py-3 text-sm font-semibold text-slate-600">#</th>
-                <th className="px-4 py-3 text-sm font-semibold text-slate-600">Faculty ID</th>
-                <th className="px-4 py-3 text-sm font-semibold text-slate-600">Name</th>
-                <th className="px-4 py-3 text-sm font-semibold text-slate-600">Department</th>
-                <th className="px-4 py-3 text-sm font-semibold text-slate-600">Designation</th>
-                <th className="px-4 py-3 text-sm font-semibold text-slate-600">View</th>
+                <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                  Faculty ID
+                </th>
+                <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                  Department
+                </th>
+                <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                  Designation
+                </th>
+                <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                  View
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {filteredFaculties.map((f, index) => (
                 <tr
-                  key={f.id}
+                  key={f._id || index}
                   className="border-b border-purple-50 hover:bg-purple-50/50 transition"
                 >
-                  <td className="px-4 py-3 text-sm text-slate-600">{index + 1}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-slate-700">{f.facultyId}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{f.name}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{f.department}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{f.designation}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">
+                    {index + 1}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-mono text-slate-700">
+                    {f.facultyId || f.facultyID || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-700">
+                    {f.name || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-700">
+                    {f.department || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-700">
+                    {f.designation || "-"}
+                  </td>
 
                   <td className="px-4 py-3 text-sm">
                     <button
@@ -168,7 +212,7 @@ export default function ViewAllFaculty() {
                 </tr>
               ))}
 
-              {filteredFaculties.length === 0 && (
+              {!loading && filteredFaculties.length === 0 && (
                 <tr>
                   <td colSpan={6} className="text-center py-6 text-slate-500">
                     No faculty match your filters.
@@ -184,7 +228,6 @@ export default function ViewAllFaculty() {
       {selectedFaculty && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 max-w-md w-full mx-4 p-6">
-
             <h3 className="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">
               <span className="h-10 w-10 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center">
                 <FiUser />
@@ -193,22 +236,35 @@ export default function ViewAllFaculty() {
             </h3>
 
             <div className="space-y-2 text-sm text-slate-700 mb-6">
-              <p><strong>Faculty ID:</strong> {selectedFaculty.facultyId}</p>
-              <p><strong>Name:</strong> {selectedFaculty.name}</p>
+              <p>
+                <strong>Faculty ID:</strong>{" "}
+                {selectedFaculty.facultyId || selectedFaculty.facultyID || "-"}
+              </p>
+              <p>
+                <strong>Name:</strong> {selectedFaculty.name || "-"}
+              </p>
 
               <p className="flex items-center gap-2">
                 <FiMail className="text-purple-500" />
-                <span><strong>Email:</strong> {selectedFaculty.email}</span>
+                <span>
+                  <strong>Email:</strong> {selectedFaculty.email || "-"}
+                </span>
               </p>
 
               <p className="flex items-center gap-2">
                 <FiHome className="text-purple-500" />
-                <span><strong>Department:</strong> {selectedFaculty.department}</span>
+                <span>
+                  <strong>Department:</strong>{" "}
+                  {selectedFaculty.department || "-"}
+                </span>
               </p>
 
               <p className="flex items-center gap-2">
                 <FiBriefcase className="text-purple-500" />
-                <span><strong>Designation:</strong> {selectedFaculty.designation}</span>
+                <span>
+                  <strong>Designation:</strong>{" "}
+                  {selectedFaculty.designation || "-"}
+                </span>
               </p>
             </div>
 
@@ -220,7 +276,6 @@ export default function ViewAllFaculty() {
                 Close
               </button>
             </div>
-
           </div>
         </div>
       )}

@@ -18,12 +18,26 @@ import StudentCurrentCourses from "./pages/student/CurrentCourses";
 import Registration from "./pages/student/Registration";
 import PrevGradeSheet from "./pages/student/PrevGradeSheet";
 
+import Login from "./pages/Login";
+
+import Otp from "./pages/Otp";
+
+import ForgotPassword from "./pages/ForgotPassword";
+
+import ResetPassword from "./pages/ResetPassword";
+
+
+
+
 function App() {
   return (
     <>
       <Toaster position="top-right" />
       <Router>
       <Routes>
+
+        {/* LOGIN PAGE */}
+        <Route path="/login" element={<Login />} />
 
         {/* HOME PAGE */}
         <Route
@@ -34,6 +48,16 @@ function App() {
             </h1>
           }
         />
+
+        {/*OTP PAGE */}
+        <Route path="/otp" element={<Otp />} />
+
+        {/*FORGOT PASSWORD PAGE */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        {/*RESET PASSWORD PAGE*/}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
 
         {/* ADMIN ROUTES */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -55,6 +79,7 @@ function App() {
         <Route path="/student/current-courses" element={<StudentCurrentCourses />} />
         <Route path="/student/registration" element={<Registration />} />
         <Route path="/student/previous-grades" element={<PrevGradeSheet />} />
+
 
       </Routes>
     </Router>

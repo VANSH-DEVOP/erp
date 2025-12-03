@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiUserPlus, FiTrash2 } from "react-icons/fi";
-
+import toast from "react-hot-toast";
 const AddStudent = () => {
   const [students, setStudents] = useState([
     { name: "", email: "", dept: "", address: "", phone: "" },
@@ -81,30 +81,81 @@ const AddStudent = () => {
     setShowBatchModal(true);
   };
 
-  // Final submit after entering batch
-  const handleConfirmSubmit = () => {
-    if (!batch.trim()) {
-      alert("Please enter batch.");
+  
+
+const handleConfirmSubmit = async () => {
+  if (!batch.trim()) {
+    toast.error("Please enter batch.");
+    return;
+  }
+
+  const cleaned = students.filter(
+    (s) => s.name || s.email || s.dept || s.address || s.phone
+  );
+
+  if (!cleaned.length) {
+    toast.error("Please enter at least one student.");
+    return;
+  }
+
+  // Shape data exactly as backend expects: { students: [ { name, email, dept, address, phone, batch } ] }
+  const payload = cleaned.map((s) => ({
+    name: s.name,
+    email: s.email,
+    dept: s.dept,
+    address: s.address,
+    phone: s.phone,
+    batch: batch.trim(),
+  }));
+
+  const loadingId = toast.loading("Adding students...");
+
+  try {
+    const res = await fetch(
+      "http://localhost:5000/api/admin/add-student", // adjust if your base path is different
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"), // because of auth + isAdmin
+        },
+        body: JSON.stringify({ students: payload }),
+      }
+    );
+
+    const data = await res.json();
+    toast.dismiss(loadingId);
+
+    if (!res.ok) {
+      toast.error(data.message || "Something went wrong");
       return;
     }
 
-    const cleaned = students.filter(
-      (s) => s.name || s.email || s.dept || s.address || s.phone
-    );
+    const results = data.results || [];
+    const success = results.filter((r) => r.status === "success").length;
+    const failed = results.filter((r) => r.status === "failed").length;
 
-    const payload = cleaned.map((s) => ({
-      ...s,
-      batch: batch.trim(),
-    }));
+    if (success > 0) {
+      toast.success(`Successfully added ${success} student(s).`);
+    }
+    if (failed > 0) {
+      toast.error(
+        `${failed} student(s) failed (e.g. email already exists).`
+      );
+    }
 
-    console.log("Students to add:", payload);
-    alert(`${payload.length} student(s) added for batch ${batch.trim()}!`);
-
-    // Reset
+    // Reset form
     setStudents([{ name: "", email: "", dept: "", address: "", phone: "" }]);
     setBatch("");
     setShowBatchModal(false);
-  };
+  } catch (err) {
+    console.error("Bulk add error:", err);
+    toast.dismiss(loadingId);
+    toast.error("Network error, please try again.");
+  }
+};
+
+
 
   const handleCloseBatchModal = () => {
     setShowBatchModal(false);

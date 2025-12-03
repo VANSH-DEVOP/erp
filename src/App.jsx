@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AddStudent from "./pages/admin/AddStudent";
 import AddFaculty from "./pages/admin/AddFaculty";
@@ -7,7 +7,7 @@ import AllCourses from "./pages/admin/AllCourses";
 import CreateCourseOffering from "./pages/admin/CreateCourseOffering";
 import ViewAllStudents from "./pages/admin/ViewAllStudents";
 import ViewAllFaculty from "./pages/admin/ViewAllFaculty";
-import ViewCurrentCourseOfferings from "./pages/admin/ViewCurrentCourseOfferings";
+import ViewCurrentCourseOfferings from "./pages/admin/ViewCurrentcourseOfferings";
 
 import FacultyProfile from "./pages/faculty/FacultyProfile";
 import FacultyCurrentCourses from "./pages/faculty/CurrentCourses";
@@ -20,7 +20,9 @@ import PrevGradeSheet from "./pages/student/PrevGradeSheet";
 
 function App() {
   return (
-    <Router>
+    <>
+      <Toaster position="top-right" />
+      <Router>
       <Routes>
 
         {/* HOME PAGE */}
@@ -56,6 +58,8 @@ function App() {
 
       </Routes>
     </Router>
+    </>
+    
   );
 }
 

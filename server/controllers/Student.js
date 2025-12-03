@@ -1,13 +1,12 @@
 // controllers/studentController.js
-import User from "../models/User.js";
-import Offering from "../models/Offering.js";
-import Enrollment from "../models/Enrollment.js";
-
+const User = require("../models/User");
+const Offering = require("../models/Offering");
+const Enrollment = require("../models/Enrollment");
 /* =========================================================================
    1) Get logged-in student profile
    Route: GET /api/student/me
    ========================================================================= */
-export const getStudentProfile = async (req, res) => {
+const getStudentProfile = async (req, res) => {
   try {
     const studentId = req.user._id;
 
@@ -27,7 +26,7 @@ export const getStudentProfile = async (req, res) => {
    2) Get all current course offerings for student's dept + semester
    Route: GET /api/student/current-offerings
    ========================================================================= */
-export const getCurrentOfferings = async (req, res) => {
+const getCurrentOfferings = async (req, res) => {
   try {
     const studentId = req.user._id;
     const student = await User.findById(studentId);
@@ -73,7 +72,7 @@ export const getCurrentOfferings = async (req, res) => {
    Route: POST /api/student/register
    Body: { offeringId }
    ========================================================================= */
-export const registerInOffering = async (req, res) => {
+const registerInOffering = async (req, res) => {
   try {
     const studentId = req.user._id;
     const { offeringId } = req.body;
@@ -144,7 +143,7 @@ export const registerInOffering = async (req, res) => {
    4) Get all courses the student is part of (APPROVED enrollments)
    Route: GET /api/student/my-courses
    ========================================================================= */
-export const getMyCourses = async (req, res) => {
+const getMyCourses = async (req, res) => {
   try {
     const studentId = req.user._id;
 
@@ -173,4 +172,11 @@ export const getMyCourses = async (req, res) => {
     console.error("getMyCourses error:", err);
     return res.status(500).json({ message: "Server error" });
   }
+};
+
+module.exports = {
+  getStudentProfile,
+  getCurrentOfferings,
+  registerInOffering,
+  getMyCourses,
 };

@@ -1,7 +1,8 @@
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-export const protect = async (req, res, next) => {
+
+const auth = async (req, res, next) => {
   try {
     let token;
 
@@ -39,3 +40,6 @@ export const protect = async (req, res, next) => {
     return res.status(401).json({ message: "Not authorized, token invalid" });
   }
 };
+
+
+module.exports = {auth};

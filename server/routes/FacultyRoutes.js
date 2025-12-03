@@ -1,14 +1,15 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   getFacultyDetails,
   getMyOfferings,
   getStudentsInOffering,
   getCourseEnrollmentRequests,
   approveEnrollmentRequest,
   rejectEnrollmentRequest
-} from "../controllers/Faculty.js";
+} = require("../controllers/Faculty.js");
 
-import { auth, isFaculty } from "../middleware/auth.js";
+const { auth } = require("../middleware/auth.js");
+const {isFaculty} = require("../middleware/roles.js");
 
 const router = express.Router();
 
@@ -30,4 +31,4 @@ router.post("/requests/approve", auth, isFaculty, approveEnrollmentRequest);
 /* ========================= REJECT REQUEST ========================= */
 router.post("/requests/reject", auth, isFaculty, rejectEnrollmentRequest);
 
-export default router;
+module.exports = router;

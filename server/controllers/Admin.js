@@ -1,7 +1,8 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-const Course = require("../models/Course");
+const Course = require("../models/Courses");
 const Offering = require("../models/Offering");
+const Enrollment = require("../models/Enrollment");
 const mailSender = require("../utils/mailSender");
 
 // ================== HELPERS ==================
@@ -15,7 +16,8 @@ const generateRandomPassword = (length = 10) => {
   return pwd;
 };
 
-// Student Roll No → 25CSE003
+// Student Roll No → 25CSE003 
+
 const generateStudentRollNo = async (department, batch) => {
   const deptCode = department.toUpperCase();
   const yearStr = batch.toString().slice(-2);
@@ -29,6 +31,7 @@ const generateStudentRollNo = async (department, batch) => {
 };
 
 // Faculty ID → CSE005
+
 const generateFacultyId = async (department) => {
   const deptCode = department.toUpperCase();
   const count = await User.countDocuments({
@@ -40,6 +43,7 @@ const generateFacultyId = async (department) => {
 };
 
 // ========================= ADD STUDENT =========================
+// /api/admin/add-student
 const addStudent = async (req, res) => {
   try {
     const { students } = req.body;
@@ -103,6 +107,7 @@ const addStudent = async (req, res) => {
 };
 
 // ========================= ADD FACULTY =========================
+// /api/admin/add-faculty
 const addFaculty = async (req, res) => {
   try {
     const { name, email, department, designation } = req.body;
@@ -157,6 +162,7 @@ const addFaculty = async (req, res) => {
 };
 
 // ========================= VIEW ALL STUDENTS =========================
+// /api/admin/students
 const getAllStudents = async (req, res) => {
   try {
     const students = await User.find({ role: "Student" }).select("-passwordHash");
@@ -168,6 +174,7 @@ const getAllStudents = async (req, res) => {
 };
 
 // ========================= VIEW ALL FACULTIES =========================
+//  /api/admin/faculties
 const getAllFaculties = async (req, res) => {
   try {
     const faculties = await User.find({ role: "Faculty" }).select("-passwordHash");
@@ -179,6 +186,7 @@ const getAllFaculties = async (req, res) => {
 };
 
 // ========================= ADD COURSE =========================
+//  /api/admin/add-course
 const addCourse = async (req, res) => {
   try {
     const { courseCode, courseName } = req.body;
@@ -207,6 +215,7 @@ const addCourse = async (req, res) => {
 };
 
 // ========================= VIEW ALL COURSES =========================
+// /api/admin/courses
 const getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find().sort({ courseCode: 1 });
@@ -218,6 +227,7 @@ const getAllCourses = async (req, res) => {
 };
 
 // ========================= DROP COURSE =========================
+// /api/admin/course/:courseId
 const dropCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -236,6 +246,7 @@ const dropCourse = async (req, res) => {
 };
 
 // ========================= CREATE COURSE OFFERING =========================
+// /api/admin/create-offering
 const createCourseOffering = async (req, res) => {
   try {
     const { courseId, instructorId, semester, department, maxSeats, status } =
@@ -275,18 +286,57 @@ const createCourseOffering = async (req, res) => {
 };
 
 // ========================= VIEW ALL OFFERINGS =========================
+// /api/admin/offerings
+
 const getAllOfferings = async (req, res) => {
   try {
-    const offerings = await Offering.find()
+    // Only OPEN offerings (admin current semester/open view)
+    const offerings = await Offering.find({ status: "OPEN" })
       .populate("course", "courseCode courseName")
-      .populate("instructor", "name email department");
-//populate enrollments
-    res.json(offerings);
+      .populate("instructor", "name email department facultyId") // adjust fields as per your schema
+      .sort({ createdAt: -1 });
+
+    const offeringIds = offerings.map((o) => o._id);
+
+    // Get APPROVED enrollments for these offerings
+    const enrollments = await Enrollment.find({
+      offering: { $in: offeringIds },
+      requestStatus: "APPROVED",
+    })
+      .populate("student", "rollNo name")
+      .lean();
+
+    // Group enrollments by offering
+    const enrollmentMap = {};
+    enrollments.forEach((enr) => {
+      const key = enr.offering.toString();
+      if (!enrollmentMap[key]) enrollmentMap[key] = [];
+      enrollmentMap[key].push({
+        roll: enr.student.rollNo,
+        name: enr.student.name,
+      });
+    });
+
+    // Final response shape for frontend
+    const response = offerings.map((off) => ({
+      id: off._id, // for React key
+      courseCode: off.course.courseCode,
+      courseName: off.course.courseName,
+      semester: off.semester,
+      dept: off.department,
+      instructor: off.instructor?.name || "Unknown",
+      instructorId: off.instructor?.facultyId || off.instructor?._id,
+      capacity: off.maxSeats,
+      enrolledStudents: enrollmentMap[off._id.toString()] || [],
+    }));
+
+    return res.json({ offerings: response });
   } catch (err) {
     console.error("getAllOfferings error:", err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 module.exports = {
   addStudent,
@@ -299,3 +349,4 @@ module.exports = {
   createCourseOffering,
   getAllOfferings,
 };
+

@@ -20,10 +20,10 @@ app.use(
 );
 
 // ===================== IMPORT ROUTES =====================
-const loginRoutes = require("/api/auth");
-const adminRoutes = require("/api/admin");
-const facultyRoutes = require("/api/faculty");
-const studentRoutes = require("/api/student");
+const loginRoutes = require("./routes/LoginRoutes");
+const adminRoutes = require("./routes/AdminRoutes");
+const facultyRoutes = require("./routes/FacultyRoutes");
+const studentRoutes = require("./routes/StudentRoutes");
 
 // ===================== USE ROUTES ========================
 app.use("/api/auth", loginRoutes);

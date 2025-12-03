@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FiUserPlus } from "react-icons/fi";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const AddFaculty = () => {
   const [form, setForm] = useState({
     designation: "",
@@ -12,6 +14,8 @@ const AddFaculty = () => {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Dropdown options
   const designations = [
@@ -32,19 +36,7 @@ const AddFaculty = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!form.name || !form.email || !form.designation || !form.department) {
-      alert("Please fill all required fields.");
-      return;
-    }
-
-    setSubmitting(true);
-
-    console.log("Faculty to add:", form);
-    alert("Faculty added successfully!");
-
+  const resetForm = () => {
     setForm({
       designation: "",
       name: "",
@@ -53,8 +45,55 @@ const AddFaculty = () => {
       phone: "",
       department: "",
     });
+  };
 
-    setSubmitting(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    if (!form.name || !form.email || !form.designation || !form.department) {
+      setError("Please fill all required fields.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const token = localStorage.getItem("token"); // admin token
+
+      const res = await fetch(`${API_URL}/api/admin/add-faculty`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          department: form.department,
+          designation: form.designation,
+          // If your User schema supports these, keep them; otherwise backend will just ignore
+          address: form.address,
+          phone: form.phone,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to add faculty");
+      }
+
+      setSuccess(data.message || "Faculty created and credentials emailed.");
+      resetForm();
+    } catch (err) {
+      console.error("Add faculty error:", err);
+      setError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -71,13 +110,26 @@ const AddFaculty = () => {
             </span>
             Faculty Details
           </h2>
-          <p className="text-sm text-slate-500">Fill the form to add a new faculty.</p>
+          <p className="text-sm text-slate-500">
+            Fill the form to add a new faculty.
+          </p>
         </div>
+
+        {/* Messages */}
+        {error && (
+          <div className="mb-4 text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-2xl px-4 py-2">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 text-sm text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2">
+            {success}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Row 1: Designation + Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
             {/* Designation Select */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
@@ -91,7 +143,9 @@ const AddFaculty = () => {
               >
                 <option value="">Select Designation</option>
                 {designations.map((d, idx) => (
-                  <option key={idx} value={d}>{d}</option>
+                  <option key={idx} value={d}>
+                    {d}
+                  </option>
                 ))}
               </select>
             </div>
@@ -156,7 +210,9 @@ const AddFaculty = () => {
             >
               <option value="">Select Department</option>
               {departments.map((dept, idx) => (
-                <option key={idx} value={dept}>{dept}</option>
+                <option key={idx} value={dept}>
+                  {dept}
+                </option>
               ))}
             </select>
           </div>
@@ -180,16 +236,7 @@ const AddFaculty = () => {
           <div className="flex justify-end gap-3 pt-4 border-t border-pink-100 mt-4">
             <button
               type="button"
-              onClick={() =>
-                setForm({
-                  designation: "",
-                  name: "",
-                  email: "",
-                  address: "",
-                  phone: "",
-                  department: "",
-                })
-              }
+              onClick={resetForm}
               className="px-4 py-2 rounded-full text-sm font-semibold border border-pink-100 text-slate-600 hover:bg-pink-50 transition"
             >
               Clear

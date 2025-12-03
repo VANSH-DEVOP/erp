@@ -1,17 +1,18 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   addStudent,
-  addFaculty,
   getAllStudents,
+  addFaculty,
   getAllFaculties,
   addCourse,
   getAllCourses,
   dropCourse,
   createCourseOffering,
-  getAllOfferings
-} from "../controllers/Admin.js";
+  getAllOfferings,
+} = require("../controllers/Admin.js");
 
-import { auth, isAdmin } from "../middleware/auth.js";
+const { auth } = require("../middleware/auth.js");
+const { isAdmin } = require("../middleware/roles.js");
 
 const router = express.Router();
 
@@ -32,4 +33,4 @@ router.delete("/course/:courseId", auth, isAdmin, dropCourse);
 router.post("/create-offering", auth, isAdmin, createCourseOffering);
 router.get("/offerings", auth, isAdmin, getAllOfferings);
 
-export default router;
+module.exports = router;

@@ -1,12 +1,12 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   getStudentProfile,
   getCurrentOfferings,
   registerInOffering,
-  getMyCourses
-} from "../controllers/Student.js";
-
-import { auth, isStudent } from "../middleware/auth.js";
+  getMyCourses,
+} = require("../controllers/Student.js");
+const { auth } = require("../middleware/auth.js");
+const {isStudent} = require("../middleware/roles.js");
 
 const router = express.Router();
 
@@ -22,4 +22,4 @@ router.post("/register", auth, isStudent, registerInOffering);
 /* ========================= APPROVED COURSES ========================= */
 router.get("/my-courses", auth, isStudent, getMyCourses);
 
-export default router;
+module.exports = router;

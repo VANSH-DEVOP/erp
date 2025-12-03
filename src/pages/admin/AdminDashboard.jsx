@@ -54,7 +54,7 @@ const AdminDashboard = () => {
                 {item.title}
               </h2>
 
-              <p className="text-slate-500 text-sm mt-[2px]">
+              <p className="text-slate-500 text-sm mt-1">
                 Tap to open →
               </p>
             </div>

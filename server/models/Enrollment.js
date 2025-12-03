@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const enrollmentSchema = new mongoose.Schema(
   {
@@ -57,4 +57,4 @@ const enrollmentSchema = new mongoose.Schema(
 // A student can be enrolled only once in a particular offering
 enrollmentSchema.index({ student: 1, offering: 1 }, { unique: true });
 
-export default mongoose.model("Enrollment", enrollmentSchema);
+module.exports = mongoose.model("Enrollment", enrollmentSchema);

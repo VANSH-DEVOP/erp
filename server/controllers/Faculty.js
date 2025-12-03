@@ -1,13 +1,13 @@
 // controllers/facultyController.js
-import User from "../models/User.js";
-import Offering from "../models/Offering.js";
-import Enrollment from "../models/Enrollment.js";
+const User = require("../models/User");
+const Offering = require("../models/Offering");
+const Enrollment = require("../models/Enrollment");
 
 /*
   1) Get faculty details (current logged-in faculty)
   Route: GET /api/faculty/me
 */
-export const getFacultyDetails = async (req, res) => {
+const getFacultyDetails = async (req, res) => {
   try {
     const facultyId = req.user._id;
 
@@ -27,7 +27,7 @@ export const getFacultyDetails = async (req, res) => {
   2) Get all offerings where current faculty is instructor
   Route: GET /api/faculty/my-offerings
 */
-export const getMyOfferings = async (req, res) => {
+const getMyOfferings = async (req, res) => {
   try {
     const facultyId = req.user._id;
 
@@ -59,7 +59,7 @@ export const getMyOfferings = async (req, res) => {
 
   Route: GET /api/faculty/offerings/:offeringId/students
 */
-export const getStudentsInOffering = async (req, res) => {
+const getStudentsInOffering = async (req, res) => {
   try {
     const facultyId = req.user._id;
     const { offeringId } = req.params;
@@ -111,7 +111,7 @@ export const getStudentsInOffering = async (req, res) => {
    4) Get all PENDING enrollment requests for a specific course (for this faculty)
    Route: GET /api/faculty/requests/course/:courseId
    ========================================================================= */
-export const getCourseEnrollmentRequests = async (req, res) => {
+const getCourseEnrollmentRequests = async (req, res) => {
   try {
     const facultyId = req.user._id;
 
@@ -152,7 +152,7 @@ export const getCourseEnrollmentRequests = async (req, res) => {
    Route: POST /api/faculty/requests/approve
    Body: { enrollmentId }
    ========================================================================= */
-export const approveEnrollmentRequest = async (req, res) => {
+const approveEnrollmentRequest = async (req, res) => {
   try {
     const facultyId = req.user._id;
     const { enrollmentId } = req.body;
@@ -210,7 +210,7 @@ export const approveEnrollmentRequest = async (req, res) => {
    Route: POST /api/faculty/requests/reject
    Body: { enrollmentId }
    ========================================================================= */
-export const rejectEnrollmentRequest = async (req, res) => {
+const rejectEnrollmentRequest = async (req, res) => {
   try {
     const facultyId = req.user._id;
     const { enrollmentId } = req.body;
@@ -250,4 +250,13 @@ export const rejectEnrollmentRequest = async (req, res) => {
     console.error("rejectEnrollmentRequest error:", err);
     return res.status(500).json({ message: "Server error" });
   }
+};
+
+module.exports = {
+  getFacultyDetails,
+  getMyOfferings,
+  getStudentsInOffering,
+  getCourseEnrollmentRequests,
+  approveEnrollmentRequest,
+  rejectEnrollmentRequest,
 };

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const offeringSchema = new mongoose.Schema(
   {
@@ -51,4 +51,4 @@ offeringSchema.index(
   { unique: true }
 );
 
-export default mongoose.model("Offering", offeringSchema);
+module.exports = mongoose.model("Offering", offeringSchema);

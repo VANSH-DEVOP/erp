@@ -42,56 +42,62 @@ const generateFacultyId = async (department) => {
 // ========================= ADD STUDENT =========================
 const addStudent = async (req, res) => {
   try {
-    const { name, email, department, batch, currentSemester } = req.body;
+    const { students } = req.body;
 
-    if (!name || !email || !department || !batch || !currentSemester) {
-      return res.status(400).json({
-        message:
-          "Missing required fields (name, email, department, batch, currentSemester)",
+    if (!students || !Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({ message: "No students received" });
+    }
+
+    const results = [];
+
+    for (const s of students) {
+      const { name, email, dept, address, phone, batch } = s;
+
+      // can add validation if required
+      const existing = await User.findOne({ email });
+      if (existing) {
+        results.push({ email, status: "failed", reason: "Email exists" });
+        continue;
+      }
+
+      const currentSemester = 1; // default first sem when adding fresh
+      const rollNo = await generateStudentRollNo(dept, batch);
+      const plainPassword = generateRandomPassword(10);
+      const passwordHash = await bcrypt.hash(plainPassword, 10);
+
+      const student = await User.create({
+        name,
+        email,
+        passwordHash,
+        role: "Student",
+        department: dept,
+        rollNo,
+        batch,
+        currentSemester,
+        address,
+        phone,
       });
+
+      await mailSender(
+        email,
+        "Your ERP Student Credentials",
+        `
+        <h2>Welcome to Online ERP</h2>
+        <p><strong>Roll No:</strong> ${rollNo}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Password:</strong> ${plainPassword}</p>
+        `
+      );
+
+      results.push({ email, status: "success" });
     }
-
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
-    const rollNo = await generateStudentRollNo(department, batch);
-    const plainPassword = generateRandomPassword(10);
-
-    const passwordHash = await bcrypt.hash(plainPassword, 10);
-
-    const student = await User.create({
-      name,
-      email,
-      passwordHash,
-      role: "Student",
-      department: department.toUpperCase(),
-      rollNo,
-      batch,
-      currentSemester,
-    });
-
-    // Send Email
-    await mailSender(
-      email,
-      "Your ERP Student Credentials",
-      `
-      <h2>Welcome to Online ERP</h2>
-      <p>Your student account has been created.</p>
-      <p><strong>Roll Number:</strong> ${rollNo}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Password:</strong> ${plainPassword}</p>
-      <p>Please login and change your password after first login.</p>
-      `
-    );
 
     res.status(201).json({
-      message: "Student created and credentials emailed",
-      student,
+      message: "Bulk student creation completed",
+      results,
     });
   } catch (err) {
-    console.error("addStudent error:", err);
+    console.error("addStudentsBulk error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

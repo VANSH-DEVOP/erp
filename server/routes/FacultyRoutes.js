@@ -22,7 +22,7 @@ router.get("/my-offerings", auth, isFaculty, getMyOfferings);
 router.get("/offerings/:offeringId/students", auth, isFaculty, getStudentsInOffering);
 
 /* ========================= PENDING REQUESTS ========================= */
-router.get("/requests/course/:courseId", auth, isFaculty, getCourseEnrollmentRequests);
+router.get("/requests/course", auth, isFaculty, getCourseEnrollmentRequests);
 
 /* ========================= APPROVE REQUEST ========================= */
 router.post("/requests/approve", auth, isFaculty, approveEnrollmentRequest);

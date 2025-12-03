@@ -114,11 +114,9 @@ export const getStudentsInOffering = async (req, res) => {
 export const getCourseEnrollmentRequests = async (req, res) => {
   try {
     const facultyId = req.user._id;
-    const { courseId } = req.params;
 
     // 1. Find offerings of this course taught by this faculty
     const offerings = await Offering.find({
-      course: courseId,
       instructor: facultyId,
     });
 

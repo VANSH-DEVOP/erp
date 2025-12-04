@@ -5,6 +5,8 @@ const {
   verifyStudentOtp,
   facultyLogin,
   verifyFacultyOtp,
+   forgotPassword,
+   resetPassword
 } = require("../controllers/Login");
 
 const router = express.Router();
@@ -30,5 +32,7 @@ router.post("/faculty/login", facultyLogin);
 // Step 2: Verify Faculty OTP → Generates JWT
 router.post("/faculty/verify-otp", verifyFacultyOtp);
 
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

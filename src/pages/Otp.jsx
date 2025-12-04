@@ -11,36 +11,111 @@ const Otp = () => {
   const location = useLocation();
 
   const [otp, setOtp] = useState("");
-  const [pendingUser, setPendingUser] = useState(null);
+  const [pendingUser, setPendingUser] = useState(null); // for login flow
+  const [resetContext, setResetContext] = useState(null); // { email } for reset-password flow
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Load pending user data (role + userId)
-  useEffect(() => {
-    // Try from navigation state first (optional)
-    const fromState = location.state?.pendingUser;
+  const isResetFlow = !!resetContext; // true when coming from ForgotPassword
 
-    if (fromState) {
-      setPendingUser(fromState);
-      localStorage.setItem("pendingUser", JSON.stringify(fromState));
+  // Load pending user data (role + userId) OR reset-password context (email)
+  useEffect(() => {
+    const state = location.state;
+
+    // ----- LOGIN FLOW CONTEXT (Student/Faculty) -----
+    const fromStatePending = state?.pendingUser;
+    if (fromStatePending) {
+      setPendingUser(fromStatePending);
+      localStorage.setItem("pendingUser", JSON.stringify(fromStatePending));
     } else {
-      const stored = localStorage.getItem("pendingUser");
-      if (stored) {
-        setPendingUser(JSON.parse(stored));
+      const storedPending = localStorage.getItem("pendingUser");
+      if (storedPending) {
+        setPendingUser(JSON.parse(storedPending));
+      }
+    }
+
+    // ----- RESET-PASSWORD FLOW CONTEXT -----
+    if (state?.purpose === "reset-password" && state?.email) {
+      const ctx = { email: state.email };
+      setResetContext(ctx);
+      localStorage.setItem("resetPasswordContext", JSON.stringify(ctx));
+    } else {
+      const storedReset = localStorage.getItem("resetPasswordContext");
+      if (storedReset) {
+        setResetContext(JSON.parse(storedReset));
       }
     }
   }, [location.state]);
 
-  useEffect(() => {
-    if (!pendingUser) return;
-    // Optional: auto-focus input, etc.
-  }, [pendingUser]);
-
   const handleVerify = async () => {
     setErrorMsg("");
 
+    // ---------------- RESET-PASSWORD FLOW ----------------
+    if (isResetFlow) {
+      const email = resetContext?.email;
+
+      if (!email) {
+        const msg = "No reset session found. Please try again.";
+        setErrorMsg(msg);
+        toast.error(msg);
+        navigate("/forgot-password");
+        return;
+      }
+
+      if (!otp) {
+        setErrorMsg("Please enter the OTP.");
+        return;
+      }
+
+      if (!newPassword || !confirmPassword) {
+        setErrorMsg("Please enter and confirm your new password.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        setErrorMsg("New password and confirm password do not match.");
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const res = await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+          email,
+          otp,
+          newPassword,
+        });
+
+        const msg =
+          res.data?.message || "Password reset successful. Please login.";
+
+        // Clear reset context
+        localStorage.removeItem("resetPasswordContext");
+
+        toast.success(msg);
+        navigate("/"); // back to login
+      } catch (err) {
+        console.error("Reset password OTP error:", err);
+        const msg =
+          err.response?.data?.message ||
+          "Password reset failed. Please try again.";
+        setErrorMsg(msg);
+        toast.error(msg);
+      } finally {
+        setLoading(false);
+      }
+
+      return;
+    }
+
+    // ---------------- LOGIN FLOW (EXISTING BEHAVIOR) ----------------
     if (!pendingUser || !pendingUser.userId || !pendingUser.role) {
-      setErrorMsg("No pending login session found. Please login again.");
+      const msg =
+        "No pending login session found. Please login again.";
+      setErrorMsg(msg);
       toast.error("Session expired. Please login again.");
       navigate("/");
       return;
@@ -93,7 +168,8 @@ const Otp = () => {
     } catch (err) {
       console.error("OTP verify error:", err);
       const msg =
-        err.response?.data?.message || "OTP verification failed. Please try again.";
+        err.response?.data?.message ||
+        "OTP verification failed. Please try again.";
       setErrorMsg(msg);
       toast.error(msg);
     } finally {
@@ -101,7 +177,8 @@ const Otp = () => {
     }
   };
 
-  if (!pendingUser) {
+  // If neither login nor reset context exists → show fallback
+  if (!pendingUser && !resetContext) {
     return (
       <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 max-w-md w-full">
@@ -109,7 +186,7 @@ const Otp = () => {
             Session Expired
           </h2>
           <p className="text-sm text-slate-500 mb-4 text-center">
-            We couldn't find your login session. Please login again.
+            We couldn&apos;t find your session. Please try again.
           </p>
           <button
             onClick={() => navigate("/")}
@@ -127,21 +204,34 @@ const Otp = () => {
       <div className="bg-white/90 backdrop-blur rounded-3xl shadow-xl border border-slate-100 p-8 max-w-md w-full">
         <div className="flex flex-col items-center mb-4">
           <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-500 border border-indigo-100">
-            OTP Verification
+            {isResetFlow ? "Reset Password OTP" : "OTP Verification"}
           </span>
         </div>
 
         <h2 className="text-2xl font-extrabold text-center text-slate-800 mb-2">
-          Enter OTP
+          {isResetFlow ? "Verify OTP & Reset" : "Enter OTP"}
         </h2>
         <p className="text-center text-sm text-slate-500 mb-6">
-          We have sent a 6-digit OTP to your registered email for{" "}
-          <span className="font-semibold text-pink-500">
-            {pendingUser.role === "Student" ? "Student" : "Faculty"} account
-          </span>
-          .
+          {isResetFlow ? (
+            <>
+              We have sent a 6-digit OTP to your registered email{" "}
+              <span className="font-semibold text-pink-500">
+                {resetContext?.email}
+              </span>{" "}
+              to reset your password.
+            </>
+          ) : (
+            <>
+              We have sent a 6-digit OTP to your registered email for{" "}
+              <span className="font-semibold text-pink-500">
+                {pendingUser?.role === "Student" ? "Student" : "Faculty"} account
+              </span>
+              .
+            </>
+          )}
         </p>
 
+        {/* OTP input */}
         <div className="mb-4">
           <label className="block text-xs font-semibold text-slate-500 mb-1">
             OTP
@@ -156,6 +246,36 @@ const Otp = () => {
           />
         </div>
 
+        {/* New password fields for reset-password flow */}
+        {isResetFlow && (
+          <>
+            <div className="mb-3">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-400 outline-none text-sm"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter new password"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-400 outline-none text-sm"
+              />
+            </div>
+          </>
+        )}
+
         {errorMsg && (
           <p className="text-red-500 text-sm mb-3 text-center">{errorMsg}</p>
         )}
@@ -166,7 +286,13 @@ const Otp = () => {
           className={`w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all
             ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
         >
-          {loading ? "Verifying..." : "Verify OTP"}
+          {loading
+            ? isResetFlow
+              ? "Resetting..."
+              : "Verifying..."
+            : isResetFlow
+            ? "Verify & Reset Password"
+            : "Verify OTP"}
         </button>
 
         <button

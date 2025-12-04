@@ -9,7 +9,7 @@ export default function DepartmentPie() {
     { dept: "ECE", students: 320, faculty: 20, color: "#9adcff" },  // pastel sky blue
     { dept: "MECH", students: 210, faculty: 15, color: "#a3d8f4" }, // soft aqua
     { dept: "CIVIL", students: 170, faculty: 12, color: "#c8b6ff" }, // lavender
-    { dept: "IT", students: 100, faculty: 10, color: "#ffd6e0" },   // baby pink
+    { dept: "IT", students: 100, faculty: 10, color: "#aee2ff" },   // baby pink
   ];
 
   const studentData = departments.map((d, index) => ({
@@ -119,6 +119,7 @@ export default function DepartmentPie() {
           <Typography
             sx={{
               mt: 2,
+              mr:8,
               fontSize: "16px",
               color: "#6b6b6b",
               fontWeight: 600,
@@ -160,6 +161,7 @@ export default function DepartmentPie() {
           <Typography
             sx={{
               mt: 2,
+              mr:8,
               fontSize: "16px",
               color: "#6b6b6b",
               fontWeight: 600,

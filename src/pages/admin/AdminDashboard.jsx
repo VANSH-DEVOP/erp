@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUsers, FiBook, FiLayers, FiPlusCircle } from "react-icons/fi";
+import { FiUsers, FiBook, FiLayers, FiPlusCircle,FiUserPlus, } from "react-icons/fi";
 import DepartmentPie from "../../components/DepartmentPie";
 
 
@@ -8,8 +8,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const options = [
-    { title: "Add Student", icon: <FiUsers size={30} />, path: "/admin/add-student" },
-    { title: "Add Faculty", icon: <FiUsers size={30} />, path: "/admin/add-faculty" },
+    { title: "Add Student", icon: <FiUserPlus size={30} />, path: "/admin/add-student" },
+    { title: "Add Faculty", icon: <FiUserPlus size={30} />, path: "/admin/add-faculty" },
     { title: "All Courses", icon: <FiBook size={30} />, path: "/admin/all-courses" },
     { title: "Create Course Offering", icon: <FiPlusCircle size={30} />, path: "/admin/create-course-offering" },
     { title: "View All Students", icon: <FiUsers size={30} />, path: "/admin/view-all-students" },

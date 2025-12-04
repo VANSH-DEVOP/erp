@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const [role, setRole] = useState("student"); // "student" | "faculty"
 
@@ -38,7 +40,7 @@ const Login = () => {
 
     ctx.clearRect(0, 0, width, height);
 
-    // Background gradient
+    // Background gradient (soft)
     const gradient = ctx.createLinearGradient(0, 0, width, height);
     gradient.addColorStop(0, "#e0f2fe");
     gradient.addColorStop(1, "#f9a8d4");
@@ -46,13 +48,12 @@ const Login = () => {
     ctx.fillRect(0, 0, width, height);
 
     // Text styling
-    ctx.font = "28px Comic Sans MS";
+    ctx.font = "24px Comic Sans MS";
     ctx.fillStyle = "#0f172a";
 
-    // Random tilt / skew
     const x = 15;
-    const y = 35;
-    const angle = (Math.random() - 0.5) * 0.6; // -0.3 to 0.3 rad
+    const y = 32;
+    const angle = (Math.random() - 0.5) * 0.4;
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
@@ -60,24 +61,19 @@ const Login = () => {
     ctx.restore();
 
     // Random lines
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       ctx.beginPath();
       ctx.moveTo(Math.random() * width, Math.random() * height);
       ctx.lineTo(Math.random() * width, Math.random() * height);
-      ctx.strokeStyle = `rgba(15,23,42,${0.3 + Math.random() * 0.5})`;
-      ctx.lineWidth = 1 + Math.random() * 1.5;
+      ctx.strokeStyle = `rgba(15,23,42,${0.25 + Math.random() * 0.4})`;
+      ctx.lineWidth = 1 + Math.random();
       ctx.stroke();
     }
 
     // Random dots
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 20; i++) {
       ctx.fillStyle = `rgba(15,23,42,${Math.random()})`;
-      ctx.fillRect(
-        Math.random() * width,
-        Math.random() * height,
-        2,
-        2
-      );
+      ctx.fillRect(Math.random() * width, Math.random() * height, 2, 2);
     }
   };
 
@@ -89,7 +85,6 @@ const Login = () => {
     }
     setCaptcha(text);
 
-    // Draw after DOM updated
     setTimeout(() => drawCaptcha(text), 50);
   };
 
@@ -105,7 +100,6 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // When switching role, clear fields + errors (nice UX)
   const handleRoleChange = (newRole) => {
     setRole(newRole);
     setErrorMsg("");
@@ -209,7 +203,8 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      const msg = err.response?.data?.message || "Login failed. Please try again.";
+      const msg =
+        err.response?.data?.message || "Login failed. Please try again.";
       setErrorMsg(msg);
       toast.error(msg);
       generateCaptcha();
@@ -223,35 +218,28 @@ const Login = () => {
           RETURN UI
   --------------------------- */
   return (
-    <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md bg-white/90 backdrop-blur rounded-3xl shadow-xl border border-slate-100 p-8">
-        {/* Small badge */}
-        <div className="flex flex-col items-center mb-4">
-          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-pink-50 text-pink-500 border border-pink-100">
-            Online Course Registration System
-          </span>
-        </div>
-
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-6">
         {/* Title */}
-        <h1 className="text-3xl font-extrabold text-center text-slate-800 mb-1">
-          Login Portal
+        <h1 className="text-2xl font-extrabold text-slate-800 mb-1">
+          Welcome back
         </h1>
-        <p className="text-center text-sm text-slate-500 mb-6">
-          Sign in as a{" "}
-          <span className="font-semibold text-pink-500">
+        <p className="text-xs text-slate-500 mb-4">
+          Sign in as{" "}
+          <span className="font-semibold text-[#f472b6]">
             {role === "student" ? "Student" : "Faculty"}
           </span>
         </p>
 
-        {/* Role Toggle */}
-        <div className="flex justify-center mb-6 gap-3">
+        {/* Role Toggle - same colors for both */}
+        <div className="flex justify-start mb-4 gap-2">
           <button
             onClick={() => handleRoleChange("student")}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all
               ${
                 role === "student"
-                  ? "bg-pink-500 text-white shadow-md shadow-pink-200"
-                  : "bg-pink-50 text-pink-500 border border-pink-100"
+                  ? "bg-[#f472b6] text-white border-transparent shadow-sm"
+                  : "bg-white text-[#f472b6] border-[#f9a8d4]"
               }`}
           >
             Student
@@ -259,11 +247,11 @@ const Login = () => {
 
           <button
             onClick={() => handleRoleChange("faculty")}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all
               ${
                 role === "faculty"
-                  ? "bg-purple-500 text-white shadow-md shadow-purple-200"
-                  : "bg-purple-50 text-purple-500 border border-purple-100"
+                  ? "bg-[#f472b6] text-white border-transparent shadow-sm"
+                  : "bg-white text-[#f472b6] border-[#f9a8d4]"
               }`}
           >
             Faculty
@@ -271,10 +259,10 @@ const Login = () => {
         </div>
 
         {/* FORM */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {role === "student" && (
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">
+              <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                 Roll Number
               </label>
               <input
@@ -283,14 +271,14 @@ const Login = () => {
                 placeholder="e.g. 23CSE001"
                 value={formData.rollNo}
                 onChange={handleChange}
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-400 outline-none text-sm"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#94a3b8] outline-none text-xs"
               />
             </div>
           )}
 
           {role === "faculty" && (
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">
+              <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                 Faculty ID
               </label>
               <input
@@ -299,82 +287,102 @@ const Login = () => {
                 placeholder="e.g. FAC001"
                 value={formData.facultyId}
                 onChange={handleChange}
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-400 outline-none text-sm"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#94a3b8] outline-none text-xs"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter Password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-400 outline-none text-sm"
-            />
-          </div>
+  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+    Password
+  </label>
+  <div className="relative">
+    <input
+      type={showPassword ? "text" : "password"}
+      name="password"
+      placeholder="Enter password"
+      value={formData.password}
+      onChange={handleChange}
+      className="w-full px-3 py-2.5 pr-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#94a3b8] outline-none text-xs"
+    />
+
+    {/* Eye Icon */}
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition"
+    >
+      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+    </button>
+  </div>
+</div>
+
         </div>
 
         {/* CAPTCHA */}
-        <div className="mt-5">
-          <label className="block text-xs font-semibold text-slate-500 mb-1">
-            Security Check
-          </label>
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-[11px] font-semibold text-slate-500">
+              Security Check
+            </label>
+            <button
+              type="button"
+              onClick={generateCaptcha}
+              className="text-[11px] font-semibold text-[#f472b6] hover:underline"
+            >
+              Refresh captcha
+            </button>
+          </div>
 
-          {/* Canvas Captcha Image */}
-          <canvas
-            id="captchaCanvas"
-            width="200"
-            height="60"
-            className="rounded-xl border border-slate-300 mb-2 bg-slate-200 select-none w-full"
-          ></canvas>
+          <div className="flex items-center gap-3">
+            <canvas
+              id="captchaCanvas"
+              width="160"
+              height="50"
+              className="rounded-lg border border-slate-200 bg-slate-100 select-none flex-shrink-0"
+            ></canvas>
 
-          <button
-            type="button"
-            onClick={generateCaptcha}
-            className="text-xs text-pink-500 font-semibold hover:underline mb-2"
-          >
-            Refresh Captcha
-          </button>
-
-          <input
-            type="text"
-            placeholder="Enter Captcha"
-            value={captchaInput}
-            onChange={(e) => setCaptchaInput(e.target.value.toUpperCase())}
-            className="w-full px-4 py-3 rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-300 text-sm outline-none"
-          />
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Enter captcha"
+                value={captchaInput}
+                onChange={(e) =>
+                  setCaptchaInput(e.target.value.toUpperCase())
+                }
+                className="w-full px-3 py-2.5 rounded-xl border border-pink-100 focus:ring-2 focus:ring-[#f472b6] text-xs outline-none"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Forgot Password */}
         <p
           onClick={() => navigate("/forgot-password")}
-          className="mt-3 text-sm text-pink-500 font-semibold cursor-pointer hover:underline text-right"
+          className="mt-3 text-xs text-[#f472b6] font-semibold cursor-pointer hover:underline text-right"
         >
-          Forgot Password?
+          Forgot password?
         </p>
 
         {/* ERROR */}
         {errorMsg && (
-          <p className="text-red-500 text-sm mt-3 text-center">{errorMsg}</p>
+          <p className="text-[11px] text-red-500 mt-2 text-center">
+            {errorMsg}
+          </p>
         )}
 
         {/* LOGIN BUTTON */}
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`mt-6 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all
+          className={`mt-4 w-full bg-[#94a3b8] text-white py-2.5 rounded-xl font-semibold text-xs shadow-sm hover:bg-[#64748b] transition-all
             ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
 
         {/* Small footer */}
-        <p className="mt-4 text-[11px] text-center text-slate-400">
+        <p className="mt-3 text-[10px] text-center text-slate-400">
           © {new Date().getFullYear()} Course Registration System
         </p>
       </div>

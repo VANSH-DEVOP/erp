@@ -216,9 +216,90 @@ const verifyFacultyOtp = async (req, res) => {
   }
 };
 
+/* ====================================================================
+   5) FORGOT PASSWORD (by email) ➝ send OTP
+   ==================================================================== */
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email)
+      return res.status(400).json({ message: "Email is required" });
+
+    // Find user with this email (Student / Faculty / Admin)
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ message: "User not found with this email" });
+
+    // Optionally: delete old OTPs for this email
+    await OTP.deleteMany({ email });
+
+    const otp = generateOtp();
+    await OTP.create({ email, otp });
+
+    // TODO: integrate your email service here
+    console.log(
+      `DEBUG: Password reset OTP for ${email} is ${otp} (send via email in production)`
+    );
+
+    return res.json({
+      message: "OTP sent to your email for password reset",
+      email,
+    });
+  } catch (error) {
+    console.error("forgotPassword error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/* ====================================================================
+   6) RESET PASSWORD ➝ email + otp + newPassword
+   ==================================================================== */
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword)
+      return res.status(400).json({
+        message: "email, otp and newPassword are required",
+      });
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ message: "User not found with this email" });
+
+    // Get latest OTP sent to this email
+    const latestOtpDoc = await OTP.findOne({ email })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    if (!latestOtpDoc)
+      return res.status(400).json({ message: "OTP expired or not found" });
+
+    if (latestOtpDoc.otp !== otp)
+      return res.status(400).json({ message: "Invalid OTP" });
+
+    // Delete OTP after use
+    await OTP.deleteOne({ _id: latestOtpDoc._id });
+
+    // Hash and update password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = passwordHash;
+    await user.save();
+
+    return res.json({
+      message: "Password reset successful. Please login with your new password.",
+    });
+  } catch (error) {
+    console.error("resetPassword error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 module.exports = {
   studentLogin,
   verifyStudentOtp,
   facultyLogin,
   verifyFacultyOtp,
+  forgotPassword,
+  resetPassword
 };

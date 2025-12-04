@@ -15,7 +15,12 @@ const courseSchema = new mongoose.Schema(
       required: true,            // Example: Data Structures
       trim: true,
     },
-
+    department: {
+      type: String,
+      required: true,            // Example: CSE, ECE
+      uppercase: true,
+      trim: true,
+    }
   },
   { timestamps: true }
 );

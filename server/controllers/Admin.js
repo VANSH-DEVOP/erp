@@ -189,9 +189,9 @@ const getAllFaculties = async (req, res) => {
 //  /api/admin/add-course
 const addCourse = async (req, res) => {
   try {
-    const { courseCode, courseName, department, semester } = req.body;
+    const { courseCode, courseName, department } = req.body;
 
-    if (!courseCode || !courseName || !department || !semester) {
+    if (!courseCode || !courseName || !department) {
       return res.status(400).json({
         message: "courseCode, courseName, department and semester are required",
       });
@@ -208,7 +208,6 @@ const addCourse = async (req, res) => {
       courseCode: courseCode.toUpperCase(),
       courseName,
       department,
-      semester,
     });
 
     res.status(201).json({ message: "Course created", course });

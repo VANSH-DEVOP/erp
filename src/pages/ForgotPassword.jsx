@@ -21,7 +21,7 @@ export default function ForgotPassword() {
       setErrorMsg("");
       setSuccessMsg("");
 
-      const res = await axios.post("/api/auth/forgot-password", { email });
+      const res = await axios.post("http://localhost:5000/api/auth/forgot-password", { email });
 
       // Optional success message (backend sends: { message, email })
       setSuccessMsg(res.data?.message || "OTP sent to your email.");

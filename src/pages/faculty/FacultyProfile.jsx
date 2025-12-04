@@ -28,7 +28,7 @@ const FacultyProfile = () => {
 
         const token = localStorage.getItem("token"); // adjust key if different
 
-        const res = await fetch("/api/faculty/me", {
+        const res = await fetch("http://localhost:5000/api/faculty/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

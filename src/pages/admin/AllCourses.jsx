@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiPlus, FiTrash2, FiBookOpen } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiBookOpen, FiArrowLeft } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const DEPARTMENTS = ["CSE", "ECE", "MECH", "CIVIL", "IT"];
 
@@ -8,6 +9,8 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 export default function AllCourses() {
+  const navigate = useNavigate();
+
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,12 +68,16 @@ export default function AllCourses() {
         department: newCourse.department,
       };
 
-      const res = await axios.post(`${API_BASE_URL}/admin/add-course`, payload, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-          "Content-Type": "application/json",
-        },
-      });
+      const res = await axios.post(
+        `${API_BASE_URL}/admin/add-course`,
+        payload,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       setCourses((prev) => [...prev, res.data?.course || payload]);
 
@@ -118,6 +125,16 @@ export default function AllCourses() {
       </h1>
 
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-6 sm:p-8">
+      {/* Back button */}
+      <div className="max-w-6xl mx-auto mb-5">
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+          border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+        >
+          <FiArrowLeft /> Back to Dashboard
+        </button>
+      </div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             <FiBookOpen className="text-pink-500" /> Course List
@@ -168,8 +185,12 @@ export default function AllCourses() {
               <tr className="bg-pink-50 border-b border-pink-100 text-slate-700">
                 <th className="px-4 py-3 text-left font-semibold">#</th>
                 <th className="px-4 py-3 text-left font-semibold">Code</th>
-                <th className="px-4 py-3 text-left font-semibold">Course Name</th>
-                <th className="px-4 py-3 text-left font-semibold">Department</th>
+                <th className="px-4 py-3 text-left font-semibold">
+                  Course Name
+                </th>
+                <th className="px-4 py-3 text-left font-semibold">
+                  Department
+                </th>
                 <th className="px-4 py-3 text-left font-semibold">Actions</th>
               </tr>
             </thead>

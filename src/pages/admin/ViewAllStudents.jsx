@@ -9,14 +9,16 @@ import {
   FiEye,
   FiSearch,
   FiFilter,
+  FiArrowLeft
 } from "react-icons/fi";
-
+import { useNavigate } from "react-router-dom";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 export default function ViewAllStudents() {
   // ================= BACKEND DATA =================
   const [students, setStudents] = useState([]);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -85,12 +87,22 @@ export default function ViewAllStudents() {
   return (
     <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
       {/* Title */}
+      
       <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-700 text-center mb-8">
         View All Students
       </h1>
 
       {/* Filters Card */}
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-md border border-blue-100 p-6 mb-8">
+      <div className="max-w-6xl mx-auto mb-5">
+              <button
+                onClick={() => navigate("/admin/dashboard")}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+                border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+              >
+                <FiArrowLeft /> Back to Dashboard
+              </button>
+            </div>
         <div className="flex items-center gap-3 text-blue-600 font-semibold mb-4">
           <FiFilter /> Filters
         </div>

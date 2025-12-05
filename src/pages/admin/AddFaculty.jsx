@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import { FiUserPlus } from "react-icons/fi";
+import { FiUserPlus, FiArrowLeft } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const AddFaculty = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     designation: "",
     name: "",
@@ -17,7 +20,6 @@ const AddFaculty = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Dropdown options
   const designations = [
     "Professor",
     "Associate Professor",
@@ -26,7 +28,7 @@ const AddFaculty = () => {
     "Lecturer",
   ];
 
-  const departments = ["CSE", "IT", "ECE", "EE", "ME", "CE"];
+  const departments = ["CSE", "IT", "ECE", "MECH", "CIVIL"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,8 +62,7 @@ const AddFaculty = () => {
 
     try {
       setSubmitting(true);
-
-      const token = localStorage.getItem("token"); // admin token
+      const token = localStorage.getItem("token");
 
       const res = await fetch(`${API_URL}/api/admin/add-faculty`, {
         method: "POST",
@@ -74,7 +75,6 @@ const AddFaculty = () => {
           email: form.email,
           department: form.department,
           designation: form.designation,
-          // If your User schema supports these, keep them; otherwise backend will just ignore
           address: form.address,
           phone: form.phone,
         }),
@@ -103,6 +103,15 @@ const AddFaculty = () => {
       </h1>
 
       <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-6 sm:p-8">
+        {/* Back button */}
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+          border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+        >
+          <FiArrowLeft /> Back to Dashboard
+        </button>
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             <span className="h-12 w-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center">
@@ -115,7 +124,6 @@ const AddFaculty = () => {
           </p>
         </div>
 
-        {/* Messages */}
         {error && (
           <div className="mb-4 text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-2xl px-4 py-2">
             {error}
@@ -128,9 +136,7 @@ const AddFaculty = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Row 1: Designation + Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Designation Select */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Designation <span className="text-rose-500">*</span>
@@ -150,7 +156,6 @@ const AddFaculty = () => {
               </select>
             </div>
 
-            {/* Name */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Name <span className="text-rose-500">*</span>
@@ -165,9 +170,7 @@ const AddFaculty = () => {
             </div>
           </div>
 
-          {/* Row 2: Email + Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Email */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Email <span className="text-rose-500">*</span>
@@ -182,7 +185,6 @@ const AddFaculty = () => {
               />
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Phone
@@ -197,7 +199,6 @@ const AddFaculty = () => {
             </div>
           </div>
 
-          {/* Row 3: Department Select */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Department <span className="text-rose-500">*</span>
@@ -217,7 +218,6 @@ const AddFaculty = () => {
             </select>
           </div>
 
-          {/* Address */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Address
@@ -232,7 +232,6 @@ const AddFaculty = () => {
             />
           </div>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-pink-100 mt-4">
             <button
               type="button"

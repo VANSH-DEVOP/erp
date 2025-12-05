@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FiBookOpen, FiUsers } from "react-icons/fi";
-
+import { FiBookOpen, FiUsers,FiArrowLeft } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const ViewCurrentCourseOfferings = () => {
@@ -8,6 +8,7 @@ const ViewCurrentCourseOfferings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
   const [showStudentsModal, setShowStudentsModal] = useState(false);
   const [selectedOffering, setSelectedOffering] = useState(null);
 
@@ -62,12 +63,23 @@ const ViewCurrentCourseOfferings = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
       {/* Page Title */}
+      
       <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-700 text-center mb-10">
         Current Course Offerings
       </h1>
 
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-6 sm:p-8">
+      <div className="max-w-6xl mx-auto mb-5">
+                    <button
+                      onClick={() => navigate("/admin/dashboard")}
+                      className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+                      border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+                    >
+                      <FiArrowLeft /> Back to Dashboard
+                    </button>
+                  </div>
         <div className="flex items-center justify-between mb-6">
+        
           <h2 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             <span className="h-10 w-10 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center">
               <FiBookOpen />

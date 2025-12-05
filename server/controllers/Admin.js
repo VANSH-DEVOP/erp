@@ -317,23 +317,37 @@ const getAllOfferings = async (req, res) => {
       const key = enr.offering.toString();
       if (!enrollmentMap[key]) enrollmentMap[key] = [];
       enrollmentMap[key].push({
-        roll: enr.student.rollNo,
-        name: enr.student.name,
+        roll: enr.student?.rollNo,
+        name: enr.student?.name,
       });
     });
 
-    // Final response shape for frontend
-    const response = offerings.map((off) => ({
-      id: off._id, // for React key
-      courseCode: off.course.courseCode,
-      courseName: off.course.courseName,
-      semester: off.semester,
-      dept: off.department,
-      instructor: off.instructor?.name || "Unknown",
-      instructorId: off.instructor?.facultyId || off.instructor?._id,
-      capacity: off.maxSeats,
-      enrolledStudents: enrollmentMap[off._id.toString()] || [],
-    }));
+    // Optional: log offerings that are missing course
+    const broken = offerings.filter((off) => !off.course);
+    if (broken.length > 0) {
+      console.warn(
+        "Offerings with missing course:",
+        broken.map((b) => b._id.toString())
+      );
+    }
+
+    // Final response shape for frontend (SAFE)
+    const response = offerings.map((off) => {
+      const course = off.course || {};
+      const instructor = off.instructor || {};
+
+      return {
+        id: off._id, // for React key
+        courseCode: course.courseCode || "",   // safe
+        courseName: course.courseName || "",   // safe
+        semester: off.semester,
+        dept: off.department,
+        instructor: instructor.name || "Unknown",
+        instructorId: instructor.facultyId || instructor._id || null,
+        capacity: off.maxSeats,
+        enrolledStudents: enrollmentMap[off._id.toString()] || [],
+      };
+    });
 
     return res.json({ offerings: response });
   } catch (err) {
@@ -341,6 +355,7 @@ const getAllOfferings = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 module.exports = {

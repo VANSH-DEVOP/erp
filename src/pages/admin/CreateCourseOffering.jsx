@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { FiArrowLeft } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/admin";
@@ -16,6 +18,8 @@ const CreateCourseOffering = () => {
   });
 
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
 
   // 🔐 Fetch token from localStorage
   const token = localStorage.getItem("token");
@@ -77,7 +81,7 @@ const CreateCourseOffering = () => {
       };
 
       const res = await axios.post(
-        `${API_BASE_URL}/offerings/create-offering`,
+        `${API_BASE_URL}/create-offering`,
         payload,
         {
           headers: {
@@ -106,10 +110,18 @@ const CreateCourseOffering = () => {
     <div className="min-h-[calc(100vh-80px)] w-full bg-gradient-to-br from-[#fdf2ff] via-[#f4fbff] to-[#fffdf5] flex items-start justify-center px-4 py-10">
       <div className="w-full max-w-3xl">
         {/* Page title / breadcrumb feel */}
-        <div className="mb-6">
-          <p className="text-xs font-medium tracking-wide text-blue-500 uppercase">
-            Course Management
-          </p>
+
+        <div className="mb-4">
+          {/* Back button */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate("/admin/dashboard")}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+            border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+          >
+            <FiArrowLeft /> Back to Dashboard
+          </button>
+        </div>
           <h1 className="mt-1 text-2xl font-semibold text-slate-800">
             Create Course Offering
           </h1>
@@ -118,6 +130,8 @@ const CreateCourseOffering = () => {
             upcoming term.
           </p>
         </div>
+
+        
 
         <div className="bg-white/90 backdrop-blur shadow-lg shadow-blue-100 border border-slate-100 rounded-2xl overflow-hidden">
           {/* Card header strip */}
@@ -197,27 +211,27 @@ const CreateCourseOffering = () => {
                 </div>
 
                 {/* Department */}
-<div>
-  <label className="block text-sm font-medium text-slate-700 mb-1.5">
-    Department <span className="text-red-500">*</span>
-  </label>
-  <select
-    required
-    name="department"
-    value={formData.department}
-    onChange={handleChange}
-    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f8a5c2] focus:border-[#f8a5c2] transition"
-  >
-    <option value="">Select Department</option>
-    <option value="CSE">CSE — Computer Science</option>
-    <option value="ECE">ECE — Electronics & Communication</option>
-    <option value="ME">ME — Mechanical</option>
-    <option value="EE">EE — Electrical</option>
-    <option value="CE">CE — Civil</option>
-    <option value="IT">IT — Information Technology</option>
-  </select>
-</div>
-
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f8a5c2] focus:border-[#f8a5c2] transition"
+                  >
+                    <option value="">Select Department</option>
+                    <option value="CSE">CSE</option>
+                    <option value="ECE">
+                      ECE
+                    </option>
+                    <option value="MECH">MECHl</option>
+                    <option value="CIVIL">CIVIL</option>
+                    <option value="IT">IT</option>
+                  </select>
+                </div>
               </div>
 
               {/* Max Seats */}
@@ -257,11 +271,11 @@ const CreateCourseOffering = () => {
                   required.
                 </p>
                 <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-[#f8a5c2] px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-md shadow-pink-100 hover:bg-[#f48fb1] hover:shadow-lg hover:shadow-pink-200 active:scale-[0.97] transition"
-              >
-                Create Offering
-              </button>
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-full border px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-md shadow-pink-100  hover:shadow-lg hover:shadow-pink-200 active:scale-[0.97] transition"
+                >
+                  Create Offering
+                </button>
               </div>
             </form>
           </div>

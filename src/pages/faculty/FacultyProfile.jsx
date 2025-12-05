@@ -10,6 +10,7 @@ import {
   FiLayers,
   FiHome,
   FiTag,
+  FiLogOut,   // ⬅ ADDED
 } from "react-icons/fi";
 
 const FacultyProfile = () => {
@@ -19,14 +20,19 @@ const FacultyProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 👉 Fetch current logged-in faculty: GET /api/faculty/me
+  // 🔹 Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("token"); // adjust key if different
+        const token = localStorage.getItem("token");
 
         const res = await fetch("http://localhost:5000/api/faculty/me", {
           method: "GET",
@@ -67,7 +73,6 @@ const FacultyProfile = () => {
     },
   ];
 
-  // Safely derive joined year if present
   const joinedYear = faculty?.joined
     ? new Date(faculty.joined).getFullYear()
     : faculty?.joinedOn
@@ -75,13 +80,21 @@ const FacultyProfile = () => {
     : "";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
+    <div className="min-h-screen bg-[#f8fafc] px-8 py-10 relative">
+      {/* 🔹 Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="absolute right-10 top-10 bg-pink-100 text-pink-600 font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow hover:bg-pink-200 hover:shadow-lg active:scale-[0.97] transition"
+      >
+        <FiLogOut size={18} />
+        Logout
+      </button>
+
       <h1 className="text-4xl font-extrabold text-slate-700 text-center mb-10">
         Faculty Profile
       </h1>
 
       <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-10">
-        {/* Loading / Error states */}
         {loading && (
           <p className="text-center text-slate-500 mb-4">Loading profile...</p>
         )}
@@ -93,7 +106,7 @@ const FacultyProfile = () => {
 
         {faculty && (
           <>
-            {/* Profile Header */}
+            {/* Header */}
             <div className="flex items-center gap-6 mb-8">
               <div className="h-20 w-20 flex items-center justify-center rounded-full bg-pink-100 text-pink-500 shadow">
                 <FiUser size={40} />

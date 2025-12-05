@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { FiUserPlus, FiTrash2 } from "react-icons/fi";
+import { FiUserPlus, FiTrash2, FiArrowLeft } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const AddStudent = () => {
+  const navigate = useNavigate();
+
   const [students, setStudents] = useState([
     { name: "", email: "", dept: "", address: "", phone: "" },
   ]);
@@ -12,11 +15,9 @@ const AddStudent = () => {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [batch, setBatch] = useState("");
 
-  // For remove-row confirmation
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [rowToRemove, setRowToRemove] = useState(null);
 
-  // To disable confirm button while submitting
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (index, e) => {
@@ -33,7 +34,6 @@ const AddStudent = () => {
     ]);
   };
 
-  // Helper: remove row by index
   const removeRow = (index) => {
     const updated = students.filter((_, i) => i !== index);
     setStudents(
@@ -43,7 +43,6 @@ const AddStudent = () => {
     );
   };
 
-  // When clicking "Remove" button on a row
   const handleRemoveClick = (index) => {
     const stu = students[index];
     const hasAnyValue = Object.values(stu).some(
@@ -51,16 +50,13 @@ const AddStudent = () => {
     );
 
     if (hasAnyValue) {
-      // Show confirmation modal
       setRowToRemove(index);
       setShowRemoveModal(true);
     } else {
-      // Directly remove empty row
       removeRow(index);
     }
   };
 
-  // Confirm removal from modal
   const handleConfirmRemove = () => {
     if (rowToRemove !== null) {
       removeRow(rowToRemove);
@@ -74,7 +70,6 @@ const AddStudent = () => {
     setShowRemoveModal(false);
   };
 
-  // Open modal when clicking "Save All Students"
   const handleOpenBatchModal = (e) => {
     e.preventDefault();
     const cleaned = students.filter(
@@ -102,11 +97,10 @@ const AddStudent = () => {
       return;
     }
 
-    // Shape data exactly as backend expects: { students: [ { name, email, dept, address, phone, batch } ] }
     const payload = cleaned.map((s) => ({
       name: s.name,
       email: s.email,
-      dept: s.dept.toUpperCase(), // important for rollNo generation
+      dept: s.dept.toUpperCase(),
       address: s.address,
       phone: s.phone,
       batch: batch.trim(),
@@ -144,12 +138,9 @@ const AddStudent = () => {
         toast.success(`Successfully added ${success} student(s).`);
       }
       if (failed > 0) {
-        toast.error(
-          `${failed} student(s) failed (e.g. email already exists).`
-        );
+        toast.error(`${failed} student(s) failed (email already exists, etc.)`);
       }
 
-      // Reset form
       setStudents([{ name: "", email: "", dept: "", address: "", phone: "" }]);
       setBatch("");
       setShowBatchModal(false);
@@ -171,13 +162,25 @@ const AddStudent = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
-      {/* Page Title */}
+      {/* Title */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-700 text-center mb-10">
         Add Multiple Students
       </h1>
 
+      {/* Back button */}
+      
+
       {/* Card */}
       <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-6 sm:p-8">
+      <div className="max-w-7xl mx-auto mb-5">
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+          border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+        >
+          <FiArrowLeft /> Back to Dashboard
+        </button>
+      </div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             <span className="h-12 w-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center">
@@ -201,7 +204,7 @@ const AddStudent = () => {
             <span className="text-center">Remove</span>
           </div>
 
-          {/* Dynamic Input Rows */}
+          {/* Dynamic rows */}
           <div className="space-y-3">
             {students.map((stu, index) => (
               <div
@@ -213,31 +216,28 @@ const AddStudent = () => {
                   placeholder="Full Name"
                   value={stu.name}
                   onChange={(e) => handleChange(index, e)}
-                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-pink-200 outline-none"
+                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 outline-none"
                 />
-
                 <input
                   name="email"
                   placeholder="Email"
                   value={stu.email}
                   onChange={(e) => handleChange(index, e)}
-                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-pink-200 outline-none"
+                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 outline-none"
                 />
 
-                {/* Dept dropdown */}
                 <select
                   name="dept"
                   value={stu.dept}
                   onChange={(e) => handleChange(index, e)}
-                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-pink-200 outline-none"
+                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 outline-none"
                 >
                   <option value="">Select Department</option>
                   <option value="CSE">CSE</option>
                   <option value="IT">IT</option>
                   <option value="ECE">ECE</option>
-                  <option value="EE">EE</option>
-                  <option value="ME">ME</option>
-                  <option value="CE">CE</option>
+                  <option value="MECH">MECH</option>
+                  <option value="CIVIL">CIVIL</option>
                 </select>
 
                 <input
@@ -245,15 +245,14 @@ const AddStudent = () => {
                   placeholder="Address"
                   value={stu.address}
                   onChange={(e) => handleChange(index, e)}
-                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-pink-200 outline-none"
+                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 outline-none"
                 />
-
                 <input
                   name="phone"
                   placeholder="Phone"
                   value={stu.phone}
                   onChange={(e) => handleChange(index, e)}
-                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-pink-200 outline-none"
+                  className="rounded-xl border border-pink-100 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 outline-none"
                 />
 
                 <div className="flex justify-center">
@@ -276,8 +275,7 @@ const AddStudent = () => {
               onClick={handleAddRow}
               className="inline-flex items-center gap-2 rounded-full border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-100 transition shadow-sm"
             >
-              <FiUserPlus size={16} />
-              Add Another
+              <FiUserPlus size={16} /> Add Another
             </button>
 
             <button
@@ -333,7 +331,7 @@ const AddStudent = () => {
         </div>
       )}
 
-      {/* Remove Row Confirmation Modal */}
+      {/* Remove Modal */}
       {showRemoveModal && rowToRemove !== null && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-3xl shadow-2xl border border-rose-100 max-w-md w-full mx-4 p-6">

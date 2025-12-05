@@ -8,12 +8,16 @@ import {
   FiEye,
   FiSearch,
   FiFilter,
+  FiArrowLeft,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 export default function ViewAllFaculty() {
+  const navigate = useNavigate();
+
   // ================= BACKEND DATA =================
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +45,7 @@ export default function ViewAllFaculty() {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("token"); // adjust if you store token differently
+        const token = localStorage.getItem("token");
 
         const res = await axios.get(`${API_BASE_URL}/admin/faculties`, {
           headers: {
@@ -90,8 +94,20 @@ export default function ViewAllFaculty() {
         View All Faculty
       </h1>
 
+      
+
       {/* Filters Card */}
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-md border border-purple-100 p-6 mb-8">
+      {/* Back button */}
+      <div className="max-w-6xl mx-auto mb-5">
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold 
+          border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+        >
+          <FiArrowLeft /> Back to Dashboard
+        </button>
+      </div>
         <div className="flex items-center gap-3 text-purple-600 font-semibold mb-4">
           <FiFilter /> Filters
         </div>
@@ -99,7 +115,10 @@ export default function ViewAllFaculty() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
-            <FiSearch className="absolute top-3 left-3 text-slate-400" size={18} />
+            <FiSearch
+              className="absolute top-3 left-3 text-slate-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search by name, faculty ID, email"
@@ -160,7 +179,9 @@ export default function ViewAllFaculty() {
           <table className="min-w-full text-left border-collapse">
             <thead>
               <tr className="bg-purple-50 border-b border-purple-100">
-                <th className="px-4 py-3 text-sm font-semibold text-slate-600">#</th>
+                <th className="px-4 py-3 text-sm font-semibold text-slate-600">
+                  #
+                </th>
                 <th className="px-4 py-3 text-sm font-semibold text-slate-600">
                   Faculty ID
                 </th>
@@ -238,7 +259,9 @@ export default function ViewAllFaculty() {
             <div className="space-y-2 text-sm text-slate-700 mb-6">
               <p>
                 <strong>Faculty ID:</strong>{" "}
-                {selectedFaculty.facultyId || selectedFaculty.facultyID || "-"}
+                {selectedFaculty.facultyId ||
+                  selectedFaculty.facultyID ||
+                  "-"}
               </p>
               <p>
                 <strong>Name:</strong> {selectedFaculty.name || "-"}

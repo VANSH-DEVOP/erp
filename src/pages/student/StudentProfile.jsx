@@ -10,6 +10,7 @@ import {
   FiHash,
   FiCheckSquare,
   FiLayers,
+  FiLogOut,
 } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -34,13 +35,19 @@ const StudentProfile = () => {
     },
   ];
 
+  // 🔥 Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("token"); // adjust if needed
+        const token = localStorage.getItem("token");
 
         const res = await fetch(`${API_URL}/api/student/me`, {
           method: "GET",
@@ -68,27 +75,34 @@ const StudentProfile = () => {
     fetchProfile();
   }, []);
 
-  // Safely derive some values
   const joinedYear = student?.createdAt
     ? new Date(student.createdAt).getFullYear()
     : student?.batch || "—";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
-      {/* Page Title */}
+    <div className="min-h-screen bg-[#f8fafc] px-8 py-10 relative">
+
+      {/* 🔥 Logout Button — top right of page */}
+      <button
+        onClick={handleLogout}
+        className="absolute top-6 right-8 flex items-center gap-2 px-4 py-2 rounded-full bg-rose-100 text-rose-600 text-sm font-semibold shadow hover:shadow-md hover:bg-rose-200 transition"
+      >
+        <FiLogOut size={18} />
+        Logout
+      </button>
+
       <h1 className="text-4xl font-extrabold text-slate-700 text-center mb-10">
         Student Profile
       </h1>
 
       <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-10">
-        {/* Error */}
+
         {error && (
           <div className="mb-6 text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-2xl px-4 py-2">
             {error}
           </div>
         )}
 
-        {/* Loading */}
         {loading ? (
           <div className="py-10 text-center text-slate-500 text-sm">
             Loading profile...
@@ -175,7 +189,7 @@ const StudentProfile = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Quick Actions */}
             <h3 className="text-xl font-semibold text-slate-600 mt-10 mb-4">
               Quick Actions
             </h3>
@@ -185,17 +199,11 @@ const StudentProfile = () => {
                 <div
                   key={i}
                   onClick={() => navigate(action.path)}
-                  className="
-                    bg-white rounded-2xl p-4
-                    border border-pink-100
-                    shadow hover:shadow-xl hover:-translate-y-1
-                    transition-all cursor-pointer flex items-center gap-4
-                  "
+                  className="bg-white rounded-2xl p-4 border border-pink-100 shadow hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex items-center gap-4"
                 >
                   <div className="h-14 w-14 rounded-2xl bg-pink-100 text-pink-500 flex items-center justify-center shadow">
                     {action.icon}
                   </div>
-
                   <p className="text-slate-700 font-semibold">{action.title}</p>
                 </div>
               ))}

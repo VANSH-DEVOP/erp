@@ -31,7 +31,6 @@ const generateStudentRollNo = async (department, batch) => {
 };
 
 // Faculty ID → CSE005
-
 const generateFacultyId = async (department) => {
   const deptCode = department.toUpperCase();
   const count = await User.countDocuments({
@@ -110,9 +109,9 @@ const addStudent = async (req, res) => {
 // /api/admin/add-faculty
 const addFaculty = async (req, res) => {
   try {
-    const { name, email, department, designation } = req.body;
+    const { name, email, department, designation, phone, address} = req.body;
 
-    if (!name || !email || !department) {
+    if(!name || !email || !department) {
       return res
         .status(400)
         .json({ message: "Missing required fields (name, email, department)" });
@@ -132,6 +131,8 @@ const addFaculty = async (req, res) => {
       name,
       email,
       passwordHash,
+      phone,
+      address,
       role: "Faculty",
       department: department.toUpperCase(),
       facultyId,

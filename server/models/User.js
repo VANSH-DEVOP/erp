@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema(
     // ========== Faculty Fields (Used only if role = Faculty) ==========
     facultyId: { type: String, unique: true, sparse: true },       // eg. CS010
     designation: { type: String },                                 // eg. Assistant Professor
+    address: { type: String },                                    // eg. Room No. 123, CSE Dept.
+    phone: { type: String },                                      // eg. +91-1234567890
   },
   { timestamps: true }
 );

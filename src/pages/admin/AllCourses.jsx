@@ -2,11 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiPlus, FiTrash2, FiBookOpen } from "react-icons/fi";
 
-// 💡 Departments
 const DEPARTMENTS = ["CSE", "ECE", "MECH", "CIVIL", "IT"];
-
-// 💡 Semesters
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -19,7 +15,6 @@ export default function AllCourses() {
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
-  const [semesterFilter, setSemesterFilter] = useState("");
 
   // Add Course Modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -27,50 +22,38 @@ export default function AllCourses() {
     courseCode: "",
     courseName: "",
     department: "",
-    semester: "",
   });
 
   // Delete Modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  // ===================== FETCH ALL COURSES =====================
+  // FETCH ALL COURSES
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("token"); // adjust if stored differently
+        const token = localStorage.getItem("token");
 
         const res = await axios.get(`${API_BASE_URL}/admin/courses`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
         });
 
         setCourses(res.data || []);
       } catch (err) {
-        console.error("Error fetching courses:", err);
-        setError(
-          err.response?.data?.message || "Failed to load courses. Try again."
-        );
+        setError(err.response?.data?.message || "Failed to load courses");
       } finally {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
-  // ===================== ADD COURSE (API) =====================
+  // ADD COURSE
   const handleAddCourse = async () => {
-    if (
-      !newCourse.courseCode ||
-      !newCourse.courseName ||
-      !newCourse.department ||
-      !newCourse.semester
-    )
+    if (!newCourse.courseCode || !newCourse.courseName || !newCourse.department)
       return;
 
     try {
@@ -80,95 +63,61 @@ export default function AllCourses() {
         courseCode: newCourse.courseCode.toUpperCase(),
         courseName: newCourse.courseName,
         department: newCourse.department,
-        semester: Number(newCourse.semester),
       };
 
-      const res = await axios.post(
-        `${API_BASE_URL}/admin/add-course`,
-        payload,
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const created = res.data?.course || payload;
-
-      // merge in case backend doesn’t yet store dept/sem
-      setCourses((prev) => [
-        ...prev,
-        {
-          ...created,
-          department: created.department || payload.department,
-          semester: created.semester || payload.semester,
+      const res = await axios.post(`${API_BASE_URL}/admin/add-course`, payload, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
         },
-      ]);
-
-      setNewCourse({
-        courseCode: "",
-        courseName: "",
-        department: "",
-        semester: "",
       });
+
+      setCourses((prev) => [...prev, res.data?.course || payload]);
+
+      setNewCourse({ courseCode: "", courseName: "", department: "" });
       setShowAddModal(false);
     } catch (err) {
-      console.error("Error adding course:", err);
       setError(err.response?.data?.message || "Failed to add course.");
     }
   };
 
-  // ===================== DELETE COURSE (API) =====================
+  // DELETE COURSE
   const handleDropCourse = async () => {
     if (!selectedCourse) return;
 
     try {
       const token = localStorage.getItem("token");
 
-      await axios.delete(
-        `${API_BASE_URL}/admin/course/${selectedCourse._id}`,
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        }
-      );
+      await axios.delete(`${API_BASE_URL}/admin/course/${selectedCourse._id}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
 
       setCourses((prev) => prev.filter((c) => c._id !== selectedCourse._id));
       setShowDeleteModal(false);
       setSelectedCourse(null);
     } catch (err) {
-      console.error("Error deleting course:", err);
       setError(err.response?.data?.message || "Failed to delete course.");
     }
   };
 
-  // ===================== FILTER LOGIC =====================
+  // FILTER LOGIC
   const filteredCourses = courses.filter((c) => {
     const code = (c.courseCode || "").toLowerCase();
     const name = (c.courseName || "").toLowerCase();
     const matchSearch =
       code.includes(searchTerm.toLowerCase()) ||
       name.includes(searchTerm.toLowerCase());
-
     const matchDept = deptFilter ? c.department === deptFilter : true;
-    const matchSem = semesterFilter
-      ? Number(c.semester) === Number(semesterFilter)
-      : true;
-
-    return matchSearch && matchDept && matchSem;
+    return matchSearch && matchDept;
   });
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-8 py-10">
-      {/* PAGE TITLE */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-700 text-center mb-10">
         All Courses
       </h1>
 
       <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-lg border border-pink-100 p-6 sm:p-8">
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
             <FiBookOpen className="text-pink-500" /> Course List
@@ -182,32 +131,24 @@ export default function AllCourses() {
           </button>
         </div>
 
-        {loading && (
-          <p className="text-sm text-pink-500 mb-3 animate-pulse">
-            Loading courses...
-          </p>
-        )}
-
         {error && (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">
+          <div className="mb-4 bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600 rounded-xl">
             {error}
           </div>
         )}
 
         {/* FILTERS */}
         <div className="flex flex-wrap gap-4 mb-6">
-          {/* Search */}
           <input
             type="text"
             placeholder="Search Code or Name"
-            className="px-4 py-3 rounded-xl border border-slate-200 w-full sm:w-1/3 focus:ring-2 focus:ring-pink-300 outline-none"
+            className="px-4 py-3 rounded-xl border border-slate-200 w-full sm:w-1/2 focus:ring-2 focus:ring-pink-300 outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          {/* Department Filter */}
           <select
-            className="px-4 py-3 rounded-xl border border-slate-200 w-full sm:w-1/4 focus:ring-2 focus:ring-pink-300 outline-none"
+            className="px-4 py-3 rounded-xl border border-slate-200 w-full sm:w-1/3 focus:ring-2 focus:ring-pink-300 outline-none"
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
           >
@@ -218,20 +159,6 @@ export default function AllCourses() {
               </option>
             ))}
           </select>
-
-          {/* Semester Filter */}
-          <select
-            className="px-4 py-3 rounded-xl border border-slate-200 w-full sm:w-1/4 focus:ring-2 focus:ring-pink-300 outline-none"
-            value={semesterFilter}
-            onChange={(e) => setSemesterFilter(e.target.value)}
-          >
-            <option value="">All Semesters</option>
-            {SEMESTERS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
         </div>
 
         {/* TABLE */}
@@ -239,19 +166,18 @@ export default function AllCourses() {
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="bg-pink-50 border-b border-pink-100 text-slate-700">
-                <th className="px-4 py-3 font-semibold text-left">#</th>
-                <th className="px-4 py-3 font-semibold text-left">Code</th>
-                <th className="px-4 py-3 font-semibold text-left">Course Name</th>
-                <th className="px-4 py-3 font-semibold text-left">Department</th>
-                <th className="px-4 py-3 font-semibold text-left">Semester</th>
-                <th className="px-4 py-3 font-semibold text-left">Actions</th>
+                <th className="px-4 py-3 text-left font-semibold">#</th>
+                <th className="px-4 py-3 text-left font-semibold">Code</th>
+                <th className="px-4 py-3 text-left font-semibold">Course Name</th>
+                <th className="px-4 py-3 text-left font-semibold">Department</th>
+                <th className="px-4 py-3 text-left font-semibold">Actions</th>
               </tr>
             </thead>
 
             <tbody>
               {!loading && filteredCourses.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="py-6 text-center text-slate-500">
+                  <td colSpan="5" className="py-6 text-center text-slate-500">
                     No matching courses found.
                   </td>
                 </tr>
@@ -262,19 +188,9 @@ export default function AllCourses() {
                     className="border-b border-pink-50 hover:bg-pink-50/50 transition"
                   >
                     <td className="px-4 py-3">{index + 1}</td>
-                    <td className="px-4 py-3 font-mono">
-                      {course.courseCode || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {course.courseName || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {course.department || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {course.semester || "-"}
-                    </td>
-
+                    <td className="px-4 py-3 font-mono">{course.courseCode}</td>
+                    <td className="px-4 py-3">{course.courseName}</td>
+                    <td className="px-4 py-3">{course.department}</td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => {
@@ -323,7 +239,7 @@ export default function AllCourses() {
             />
 
             <select
-              className="w-full px-4 py-3 mb-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-300 outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-300 outline-none"
               value={newCourse.department}
               onChange={(e) =>
                 setNewCourse({ ...newCourse, department: e.target.value })
@@ -333,21 +249,6 @@ export default function AllCourses() {
               {DEPARTMENTS.map((d) => (
                 <option key={d} value={d}>
                   {d}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-pink-300 outline-none"
-              value={newCourse.semester}
-              onChange={(e) =>
-                setNewCourse({ ...newCourse, semester: e.target.value })
-              }
-            >
-              <option value="">Select Semester</option>
-              {SEMESTERS.map((s) => (
-                <option key={s} value={s}>
-                  Semester {s}
                 </option>
               ))}
             </select>
@@ -394,7 +295,6 @@ export default function AllCourses() {
               >
                 Cancel
               </button>
-
               <button
                 onClick={handleDropCourse}
                 className="px-4 py-2 rounded-full bg-rose-500 text-white shadow hover:bg-rose-600 transition"

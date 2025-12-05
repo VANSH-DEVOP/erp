@@ -1,16 +1,67 @@
-# React + Vite
+# Course Registration System (MERN)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A complete Course Registration System web application with authentication, role-based access (Admin / Faculty / Student), course offerings, and student management.
 
-Currently, two official plugins are available:
+This README explains how to install and run the project on your local system.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+|-------|------------|
+| Frontend | React (Vite), Tailwind CSS, Axios |
+| Backend | Node.js, Express.js |
+| Database | MongoDB + Mongoose |
+| Authentication | OTP Email Verification + JWT |
+| Others | bcrypt, dotenv, nodemon |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## ✨ Features
+
+✔ OTP email verification  
+✔ Login + JWT authentication  
+✔ Role-based access (Admin / Faculty / Student)  
+✔ Course offering creation and registration  
+✔ Student and faculty profiles  
+✔ Secure protected routes  
+✔ Pastel-themed responsive UI  
+
+---
+
+## 🔧 Useful npm Scripts
+
+| Location | Command | Action |
+|----------|---------|--------|
+| server | `npm run dev` | Start backend in dev mode |
+| server | `npm start` | Run backend in production |
+| client | `npm run dev` | Start React frontend |
+| client | `npm run build` | Build production bundle |
+| client | `npm run preview` | Preview build |
+
+---
+
+## 🧩 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| CORS error | Ensure backend allows `http://localhost:5173` |
+| API Not Working | Check `VITE_API_URL` in `client/.env` |
+| MongoDB not connecting | Verify `MONGO_URI` and MongoDB status |
+| OTP not sending | Update correct `EMAIL_USER` + app password |
+
+---
+
+## 📌 Notes
+
+- Rename `.env.example` to `.env` if provided.
+- To deploy, update `CLIENT_URL` and `VITE_API_URL` with live URLs.
+
+---
+
+## 📄 License
+
+This project is open-source. You may modify or extend it for personal or academic use.

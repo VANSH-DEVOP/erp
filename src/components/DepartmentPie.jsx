@@ -2,32 +2,84 @@ import * as React from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import axios from "axios";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 export default function DepartmentPie() {
-  const departments = [
-    { dept: "CSE", students: 400, faculty: 25, color: "#f8a5c2" },  // pastel pink
-    { dept: "ECE", students: 320, faculty: 20, color: "#9adcff" },  // pastel sky blue
-    { dept: "MECH", students: 210, faculty: 15, color: "#a3d8f4" }, // soft aqua
-    { dept: "CIVIL", students: 170, faculty: 12, color: "#c8b6ff" }, // lavender
-    { dept: "IT", students: 100, faculty: 10, color: "#aee2ff" },   // baby pink
-  ];
+  const [departments, setDepartments] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
 
+  // Pastel palette
+  const pastelColors = [
+  "#ff7b72", // contrast for #f8a5c2
+  "#4aa8ff", // contrast for #9adcff
+  "#5fb2e6", // contrast for #a3d8f4
+  "#a38aff", // contrast for #c8b6ff
+  "#63b6ff"  // contrast for #aee2ff
+];
+
+
+  // Fetch stats from backend
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(
+          `${API_BASE_URL}/admin/dashboard/department-stats`,
+          {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : "",
+            },
+          }
+        );
+
+        // Backend: { departments: [ { dept, students, faculty } ] }
+        const data = res.data?.departments || [];
+
+        // Attach colors here (fallback if backend doesn't send any)
+        const withColors = data.map((d, idx) => ({
+          ...d,
+          color: d.color || pastelColors[idx % pastelColors.length],
+        }));
+
+        setDepartments(withColors);
+      } catch (err) {
+        console.error("Error fetching department stats:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load department statistics. Try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  // If no departments, avoid crashes
   const studentData = departments.map((d, index) => ({
     id: index,
     label: d.dept,
-    value: d.students,
+    value: Number(d.students ?? 0),
     color: d.color,
   }));
 
   const facultyData = departments.map((d, index) => ({
     id: index,
     label: d.dept,
-    value: d.faculty,
+    value: Number(d.faculty ?? 0),
     color: d.color,
   }));
 
-  const totalStudents = studentData.reduce((a, c) => a + c.value, 0);
-  const totalFaculty = facultyData.reduce((a, c) => a + c.value, 0);
+  const totalStudents = studentData.reduce((a, c) => a + (c.value || 0), 0);
+  const totalFaculty = facultyData.reduce((a, c) => a + (c.value || 0), 0);
 
   // Tooltip State
   const [tooltip, setTooltip] = React.useState({
@@ -42,7 +94,7 @@ export default function DepartmentPie() {
   });
 
   const showTooltip = (event, item, total, type) => {
-    if (!item) return;
+    if (!item || item.value == null || !total) return;
 
     const percent = ((item.value / total) * 100).toFixed(1);
 
@@ -62,6 +114,39 @@ export default function DepartmentPie() {
     setTooltip((t) => ({ ...t, visible: false }));
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 5 }}>
+        <Typography variant="h6" sx={{ color: "#6b6b6b", fontWeight: 500 }}>
+          Loading department statistics...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 5 }}>
+        <Typography
+          variant="h6"
+          sx={{ color: "#e11d48", fontWeight: 500, mb: 1 }}
+        >
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!departments.length) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 5 }}>
+        <Typography variant="h6" sx={{ color: "#6b6b6b", fontWeight: 500 }}>
+          No department data available.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ textAlign: "center", mt: 5, position: "relative" }}>
       <Typography
@@ -76,7 +161,7 @@ export default function DepartmentPie() {
         University Statistics
       </Typography>
 
-      {/* --- Row that holds two fixed-width chart columns --- */}
+      {/* Row that holds two fixed-width chart columns */}
       <Box
         sx={{
           display: "flex",
@@ -90,7 +175,7 @@ export default function DepartmentPie() {
         {/* STUDENT COLUMN */}
         <Box
           sx={{
-            width: 340, // fixed width for perfect alignment
+            width: 340,
             textAlign: "center",
             display: "flex",
             flexDirection: "column",
@@ -115,11 +200,10 @@ export default function DepartmentPie() {
             onPointerOut={hideTooltip}
           />
 
-          {/* Label directly below the chart, centered */}
           <Typography
             sx={{
               mt: 2,
-              mr:8,
+              mr: 8,
               fontSize: "16px",
               color: "#6b6b6b",
               fontWeight: 600,
@@ -132,7 +216,7 @@ export default function DepartmentPie() {
         {/* FACULTY COLUMN */}
         <Box
           sx={{
-            width: 340, // same fixed width for symmetry
+            width: 340,
             textAlign: "center",
             display: "flex",
             flexDirection: "column",
@@ -157,11 +241,10 @@ export default function DepartmentPie() {
             onPointerOut={hideTooltip}
           />
 
-          {/* Label directly below the chart, centered */}
           <Typography
             sx={{
               mt: 2,
-              mr:8,
+              mr: 8,
               fontSize: "16px",
               color: "#6b6b6b",
               fontWeight: 600,
@@ -183,7 +266,7 @@ export default function DepartmentPie() {
             padding: "12px 16px",
             borderRadius: "12px",
             border: `2px solid ${tooltip.color}`,
-            boxShadow: "0 6px 18px rgba(0,0,0,0.10)",
+            boxShadow: `0 6px 18px rgba(0,0,0,0.10)`,
             fontSize: "14px",
             zIndex: 1000,
             whiteSpace: "nowrap",

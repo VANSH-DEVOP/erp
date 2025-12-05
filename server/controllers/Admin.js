@@ -356,6 +356,76 @@ const getAllOfferings = async (req, res) => {
   }
 };
 
+const getDepartmentStats = async (req, res) => {
+  try {
+    // 1) Aggregate students per department
+    const studentAgg = await User.aggregate([
+      {
+        $match: {
+          role: "Student",
+          department: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: "$department",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // 2) Aggregate faculty per department
+    const facultyAgg = await User.aggregate([
+      {
+        $match: {
+          role: "Faculty",
+          department: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: "$department",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // 3) Convert to maps for easy merging
+    const studentMap = {};
+    studentAgg.forEach((row) => {
+      if (!row._id) return;
+      studentMap[row._id] = row.count;
+    });
+
+    const facultyMap = {};
+    facultyAgg.forEach((row) => {
+      if (!row._id) return;
+      facultyMap[row._id] = row.count;
+    });
+
+    // 4) Union of departments appearing in either map
+    const deptSet = new Set([
+      ...Object.keys(studentMap),
+      ...Object.keys(facultyMap),
+    ]);
+
+    // 5) Build final response array
+    const departments = Array.from(deptSet)
+      .sort() // optional: alphabetical
+      .map((dept) => ({
+        dept,
+        students: studentMap[dept] || 0,
+        faculty: facultyMap[dept] || 0,
+      }));
+
+    return res.status(200).json({ departments });
+  } catch (err) {
+    console.error("Error fetching department stats:", err);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch department statistics" });
+  }
+};
 
 
 module.exports = {
@@ -368,5 +438,5 @@ module.exports = {
   dropCourse,
   createCourseOffering,
   getAllOfferings,
+  getDepartmentStats
 };
-

@@ -1,118 +1,70 @@
 const otpTemplate = (otp) => {
   return `<!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERP OTP Verification</title>
+  <meta charset="UTF-8" />
+  <title>OTP Verification</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background-color: #0b0f19;
-      color: #ffffff;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      color: #333;
     }
-
     .container {
-      max-width: 600px;
-      margin: 25px auto;
-      background: rgba(15, 20, 35, 0.92);
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #1d2437;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+      max-width: 520px;
+      margin: 35px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 30px;
     }
-
-    .header {
-      background-color: #1d2437;
-      padding: 22px;
+    h2 {
       text-align: center;
-      font-size: 26px;
-      font-weight: bold;
-      color: #e8f9fd;
-      border-bottom: 2px solid #0f172a;
+      margin-bottom: 10px;
+      color: #1f2937;
     }
-
-    .content {
-      padding: 25px;
-      text-align: center;
-    }
-
-    .content p {
-      font-size: 16px;
+    p {
+      font-size: 15px;
       line-height: 1.6;
-      color: #cbd5e1;
+      color: #4b5563;
+      text-align: center;
     }
-
     .otp-box {
-      background-color: #ff1e00;
-      color: #ffffff;
-      display: inline-block;
+      margin: 22px auto;
       font-size: 32px;
       font-weight: bold;
-      padding: 14px 34px;
-      border-radius: 8px;
-      letter-spacing: 4px;
-      margin: 25px 0;
-      box-shadow: 0 0 12px rgba(255, 30, 0, 0.7);
+      letter-spacing: 5px;
+      color: #1f2937;
+      background: #e8eefc;
+      width: fit-content;
+      padding: 12px 28px;
+      border-radius: 6px;
+      border: 1px solid #b9c6fa;
     }
-
-    .icon-badge {
-      width: 55px;
-      height: 55px;
-      background-color: #59ce8f;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 15px;
-      font-size: 30px;
-      font-weight: bold;
-      color: #0b0f19;
-    }
-
     .footer {
-      background: rgba(15, 20, 35, 0.92);
-      padding: 12px;
-      text-align: center;
       font-size: 13px;
-      color: #cbd5e1;
-      border-top: 1px solid #1d2437;
-    }
-
-    .footer a {
-      color: #e8f9fd;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
+      text-align: center;
+      color: #6b7280;
+      margin-top: 25px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 12px;
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="header">
-      Online ERP System
-    </div>
+    <h2>Email Verification</h2>
 
-    <div class="content">
-      <div class="icon-badge">✔</div>
+    <p>Please use the One-Time Password (OTP) below to verify your Online ERP account:</p>
 
-      <p>Hello User,</p>
-      <p>We received a request to verify your email for your Online ERP account.
-         Please use the OTP below to continue with secure access:</p>
+    <div class="otp-box">${otp}</div>
 
-      <div class="otp-box">${otp}</div>
-
-      <p>If you did not request this action, kindly ignore this message or contact the ERP support team immediately.</p>
-    </div>
+    <p>If you didn’t request this, you can safely ignore this email.</p>
 
     <div class="footer">
-      <p>&copy; 2025 Online ERP System. All Rights Reserved.</p>
-      <p><a href="#">Privacy Policy</a> | <a href="#">Contact Support</a></p>
+      © 2025 Online ERP System
     </div>
   </div>
 </body>

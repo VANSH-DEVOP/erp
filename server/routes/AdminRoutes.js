@@ -9,6 +9,7 @@ const {
   dropCourse,
   createCourseOffering,
   getAllOfferings,
+  getDepartmentStats
 } = require("../controllers/Admin.js");
 
 const { auth } = require("../middleware/auth.js");
@@ -33,4 +34,5 @@ router.delete("/course/:courseId", auth, isAdmin, dropCourse);
 router.post("/create-offering", auth, isAdmin, createCourseOffering);
 router.get("/offerings", auth, isAdmin, getAllOfferings);
 
+router.get("/dashboard/department-stats", auth,isAdmin, getDepartmentStats);
 module.exports = router;
